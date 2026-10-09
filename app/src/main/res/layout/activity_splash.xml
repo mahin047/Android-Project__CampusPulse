@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_splash"
+    tools:context=".SplashActivity">
+
+    <ImageView
+        android:id="@+id/ivLogo"
+        android:layout_width="140dp"
+        android:layout_height="160dp"
+        android:layout_marginTop="90dp"
+        android:alpha="0"
+        android:contentDescription="KUET logo"
+        android:src="@drawable/ic_logo"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/titleRow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:alpha="0"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/ivLogo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins_bold"
+            android:text="Campus"
+            android:textColor="@android:color/white"
+            android:textSize="40sp"
+            android:textStyle="italic" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins_bold"
+            android:text="Pulse"
+            android:textColor="@color/pulse_mint"
+            android:textSize="40sp"
+            android:textStyle="italic" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvTagline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:alpha="0"
+        android:fontFamily="@font/poppins_regular"
+        android:text="One Campus. One Platform. Connected."
+        android:textColor="@android:color/white"
+        android:textSize="13sp"
+        app:layout_constraintTop_toBottomOf="@id/titleRow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Icons row + ECG + labels row share the SAME width, so nodes align -->
+    <LinearLayout
+        android:id="@+id/pulseContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="20dp"
+        android:alpha="0"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/tvTagline"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="6">
+            <ImageView android:layout_width="0dp" android:layout_height="26dp" android:layout_weight="1" android:src="@drawable/ic_notice" app:tint="@color/pulse_mint" android:contentDescription="Notice" />
+            <ImageView android:layout_width="0dp" android:layout_height="26dp" android:layout_weight="1" android:src="@drawable/ic_event" app:tint="@color/pulse_mint" android:contentDescription="Event" />
+            <ImageView android:layout_width="0dp" android:layout_height="26dp" android:layout_weight="1" android:src="@drawable/ic_lost_found" app:tint="@color/pulse_mint" android:contentDescription="Lost and Found" />
+            <ImageView android:layout_width="0dp" android:layout_height="26dp" android:layout_weight="1" android:src="@drawable/ic_sos" app:tint="@color/pulse_mint" android:contentDescription="SOS" />
+            <ImageView android:layout_width="0dp" android:layout_height="26dp" android:layout_weight="1" android:src="@drawable/ic_study" app:tint="@color/pulse_mint" android:contentDescription="Study Hub" />
+            <ImageView android:layout_width="0dp" android:layout_height="26dp" android:layout_weight="1" android:src="@drawable/ic_services" app:tint="@color/pulse_mint" android:contentDescription="Campus Services" />
+        </LinearLayout>
+
+        <com.campuspulse.app.EcgView
+            android:id="@+id/ecgView"
+            android:layout_width="match_parent"
+            android:layout_height="80dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="6">
+            <TextView style="@style/PulseLabel" android:text="Notice" />
+            <TextView style="@style/PulseLabel" android:text="Event" />
+            <TextView style="@style/PulseLabel" android:text="Lost &amp;\nFound" />
+            <TextView style="@style/PulseLabel" android:text="SOS" />
+            <TextView style="@style/PulseLabel" android:text="Study\nHub" />
+            <TextView style="@style/PulseLabel" android:text="Campus\nServices" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="10dp"
+        android:layout_marginStart="36dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="36dp"
+        android:max="100"
+        android:progress="0"
+        android:progressDrawable="@drawable/bg_progress"
+        app:layout_constraintTop_toBottomOf="@id/pulseContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/tvUniversity"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="40dp"
+        android:layout_marginEnd="40dp"
+        android:layout_marginBottom="6dp"
+        android:alpha="0"
+        android:fontFamily="@font/poppins_bold"
+        android:gravity="center"
+        android:text="Khulna University of\nEngineering &amp; Technology"
+        android:textColor="@android:color/white"
+        android:textSize="17sp"
+        app:layout_constraintBottom_toTopOf="@id/tvPowered"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/tvPowered"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="36dp"
+        android:alpha="0"
+        android:fontFamily="@font/poppins_regular"
+        android:text="Powered by KUET Students"
+        android:textColor="@color/pulse_mint"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

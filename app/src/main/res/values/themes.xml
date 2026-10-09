@@ -1,0 +1,24 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Base theme for the whole app -->
+    <style name="Theme.CampusPulse" parent="Theme.Material3.DayNight.NoActionBar" />
+
+    <!-- Splash theme -->
+    <style name="Theme.CampusPulse.Splash" parent="Theme.CampusPulse">
+        <item name="android:windowBackground">@drawable/bg_splash</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <!-- Labels under the ECG line -->
+    <style name="PulseLabel">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@color/text_soft</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:fontFamily">@font/poppins_regular</item>
+    </style>
+</resources>
