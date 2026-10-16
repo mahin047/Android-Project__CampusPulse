@@ -7,4 +7,17 @@
     <color name="pulse_mint_dark">#00BFA5</color>
     <color name="text_soft">#B8C7DD</color>
     <color name="track_white">#26FFFFFF</color>
+    <color name="stroke">#2A3358</color>
+    <color name="input_bg">#0F1530</color>
+    <color name="white">#FFFFFF</color>
+    <color name="primary">#7C5CFF</color>
+    <color name="bg">#0B1020</color>
+    <color name="bg_deep">#1A1040</color>
+    <color name="surface">#151B30</color>
+    <color name="text_muted">#8A93B8</color>
+    <color name="accent">#22D3EE</color>
+    <color name="danger">#FF4D5E</color>
+    <color name="success">#34D399</color>
+    <color name="admin_gold">#F5B942</color>
+    <color name="text_main">#E8ECFF</color>
 </resources>

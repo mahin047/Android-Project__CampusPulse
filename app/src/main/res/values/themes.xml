@@ -21,4 +21,31 @@
         <item name="android:textSize">10sp</item>
         <item name="android:fontFamily">@font/poppins_regular</item>
     </style>
+    <style name="Widget.CampusPulse.Input" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/input_stroke</item>
+        <item name="boxBackgroundColor">@color/input_bg</item>
+        <item name="hintTextColor">@color/accent</item>
+        <item name="android:textColorHint">@color/text_muted</item>
+        <item name="endIconTint">@color/text_muted</item>
+        <item name="startIconTint">@color/text_muted</item>
+        <item name="boxCornerRadiusTopStart">14dp</item>
+        <item name="boxCornerRadiusTopEnd">14dp</item>
+        <item name="boxCornerRadiusBottomStart">14dp</item>
+        <item name="boxCornerRadiusBottomEnd">14dp</item>
+    </style>
+    <style name="Widget.CampusPulse.Gateway.Input" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/gateway_stroke</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="boxBackgroundColor">#99071A1C</item>
+        <item name="hintTextColor">#63E6D0</item>
+        <item name="android:textColorHint">#8FB5B0</item>
+        <item name="endIconTint">#9FE3D6</item>
+        <item name="errorTextColor">#FF8A95</item>
+        <item name="boxStrokeErrorColor">#FF8A95</item>
+        <item name="boxCornerRadiusTopStart">14dp</item>
+        <item name="boxCornerRadiusTopEnd">14dp</item>
+        <item name="boxCornerRadiusBottomStart">14dp</item>
+        <item name="boxCornerRadiusBottomEnd">14dp</item>
+    </style>
 </resources>

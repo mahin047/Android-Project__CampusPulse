@@ -1,82 +1,105 @@
 package com.campuspulse.app;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.OvershootInterpolator;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.WindowCompat;
 
 import com.campuspulse.app.databinding.ActivitySplashBinding;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class SplashActivity extends AppCompatActivity {
 
+    private static final long SPLASH_DELAY_MS = 5000L;
+
     private ActivitySplashBinding binding;
-    private ObjectAnimator progressAnim;
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);   // draw behind status bar
         binding = ActivitySplashBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        playIntro();
+
+        playIntroAnimation();
+        handler.postDelayed(this::routeNext, SPLASH_DELAY_MS);
     }
 
-    private void playIntro() {
-        // 1) Logo: scale + fade (0 ms)
-        binding.ivLogo.setScaleX(0.6f);
-        binding.ivLogo.setScaleY(0.6f);
+    private void playIntroAnimation() {
+        // 1. Logo: bounce in
+        binding.ivLogo.setScaleX(0.4f);
+        binding.ivLogo.setScaleY(0.4f);
         binding.ivLogo.animate().alpha(1f).scaleX(1f).scaleY(1f)
-                .setDuration(800).setInterpolator(new OvershootInterpolator()).start();
+                .setDuration(800)
+                .setInterpolator(new OvershootInterpolator(1.6f))
+                .start();
 
-        // 2) Title: slide up + fade (500 ms)
-        binding.titleRow.setTranslationY(40f);
-        binding.titleRow.animate().alpha(1f).translationY(0f)
-                .setStartDelay(500).setDuration(600).start();
+        // 2. Title: slide up
+        fadeUp(binding.titleRow, 450, 600);
 
-        // 3) Tagline (900 ms)
-        binding.tvTagline.animate().alpha(1f).setStartDelay(900).setDuration(600).start();
+        // 3. Tagline
+        fadeUp(binding.tvTagline, 800, 500);
 
-        // 4) Icons + ECG line (1100 ms), then the line draws itself
-        binding.pulseContainer.animate().alpha(1f).setStartDelay(1100).setDuration(400)
-                .withEndAction(() -> binding.ecgView.start(2000)).start();
+        // 4. Pulse (icons + ECG + labels)
+        fadeUp(binding.pulseContainer, 1100, 600);
+        binding.ecgView.postDelayed(() -> binding.ecgView.start(2200), 1400);
+        // 5. Progress bar fills 0 -> 100
+        ObjectAnimator progress = ObjectAnimator.ofInt(binding.progressBar, "progress", 0, 100);
+        progress.setDuration(3500);
+        progress.setStartDelay(1100);
+        progress.setInterpolator(new LinearInterpolator());
+        progress.start();
 
-        // 5) Footer (1300 ms)
-        binding.tvUniversity.animate().alpha(1f).setStartDelay(1300).setDuration(600).start();
-        binding.tvPowered.animate().alpha(1f).setStartDelay(1500).setDuration(600).start();
-
-        // 6) Progress bar, then go to Login
-        progressAnim = ObjectAnimator.ofInt(binding.progressBar, "progress", 0, 100);
-        progressAnim.setStartDelay(1200);
-        progressAnim.setDuration(2200);
-        progressAnim.setInterpolator(new LinearInterpolator());
-        progressAnim.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                goNext();
-            }
-        });
-        progressAnim.start();
+        // 6. Footer
+        fadeUp(binding.tvUniversity, 1800, 500);
+        fadeUp(binding.tvPowered, 2000, 500);
     }
 
-    private void goNext() {
-        // Later: if (FirebaseAuth.getInstance().getCurrentUser() != null) -> DashboardActivity
-        startActivity(new Intent(this, LoginActivity.class));
-        finish();
-        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+    private void fadeUp(View v, long delay, long duration) {
+        v.setTranslationY(40f);
+        v.animate().alpha(1f).translationY(0f)
+                .setStartDelay(delay).setDuration(duration)
+                .setInterpolator(new DecelerateInterpolator())
+                .start();
+    }
+
+    // ---------- Day 2: role-based routing ----------
+    private void routeNext() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (user == null) {
+            go(LoginActivity.class);
+            return;
+        }
+
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(user.getUid())
+                .get()
+                .addOnSuccessListener(doc -> go(
+                        "admin".equals(doc.getString("role"))
+                                ? AdminDashboardActivity.class
+                                : DashboardActivity.class))
+                .addOnFailureListener(e -> go(DashboardActivity.class));
+    }
+
+    private void go(Class<?> target) {
+        startActivity(new Intent(this, target)); // explicit intent
+        finish(); // remove Splash from the back stack
     }
 
     @Override
     protected void onDestroy() {
-        if (progressAnim != null) {
-            progressAnim.removeAllListeners();
-            progressAnim.cancel();
-        }
         super.onDestroy();
+        handler.removeCallbacksAndMessages(null);
     }
 }

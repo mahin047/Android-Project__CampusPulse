@@ -20,8 +20,8 @@ public class EcgView extends View {
 
     // Normalized points (x: 0..1, y: 0..1). Spike sits between node 3 and node 4.
     private final float[][] points = {
-            {0f, .50f}, {.43f, .50f}, {.45f, .40f}, {.47f, .50f},
-            {.49f, .50f}, {.51f, .06f}, {.54f, .94f}, {.56f, .50f}, {1f, .50f}
+            {1f / 12f, .50f}, {.43f, .50f}, {.45f, .40f}, {.47f, .50f},
+            {.49f, .50f}, {.51f, .06f}, {.54f, .94f}, {.56f, .50f}, {11f / 12f, .50f}
     };
     private final float[] nodeX = new float[6];
 
@@ -84,6 +84,7 @@ public class EcgView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+       // android.util.Log.d("ECG", "onDraw progress=" + progress + " measure=" + (measure != null));
         if (measure == null) return;
 
         float len = measure.getLength() * progress;
