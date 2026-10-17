@@ -1,28 +1,314 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_splash"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="24dp">
+    android:background="@drawable/bg_dashboard">
 
-    <TextView
-        android:id="@+id/tvWelcome"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/poppins_bold"
-        android:text="Welcome"
-        android:textColor="@color/accent"
-        android:textSize="22sp" />
+    <!-- পরে ইউনিভার্সিটির ছবি: android:src বসাও, visibility="visible" করো -->
+    <ImageView
+        android:id="@+id/ivHeaderBg"
+        android:layout_width="match_parent"
+        android:layout_height="280dp"
+        android:alpha="0.55"
+        android:importantForAccessibility="no"
+        android:scaleType="centerCrop"
+        android:visibility="gone" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnLogout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Log out"
-        android:textAllCaps="false"
-        app:backgroundTint="@color/danger" />
-</LinearLayout>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingTop="28dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="8dp">
+
+            <!-- Header -->
+            <LinearLayout
+                android:id="@+id/headerRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvGreeting"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins_regular"
+                        android:text="Good morning,"
+                        android:textColor="#FFFFFF"
+                        android:textSize="24sp" />
+
+                    <TextView
+                        android:id="@+id/tvName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins_bold"
+                        android:text="Student"
+                        android:textColor="#FFFFFF"
+                        android:textSize="34sp" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_sun_cloud" />
+
+                        <TextView
+                            android:id="@+id/tvWeather"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:fontFamily="@font/poppins_regular"
+                            android:text="Khulna  28°C"
+                            android:textColor="#FFFFFF"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins_regular"
+                            android:text="Campus Activity Level"
+                            android:textColor="#D6E4F5"
+                            android:textSize="13sp" />
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_marginStart="10dp"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_bars" />
+
+                        <TextView
+                            android:id="@+id/tvActivityLevel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:fontFamily="@font/poppins_bold"
+                            android:text="Medium"
+                            android:textColor="#FFFFFF"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvAvatar"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:background="@drawable/bg_avatar"
+                    android:contentDescription="Profile menu"
+                    android:fontFamily="@font/poppins_bold"
+                    android:gravity="center"
+                    android:text="U"
+                    android:textColor="#FFFFFF"
+                    android:textSize="26sp" />
+            </LinearLayout>
+
+            <!-- Notice card -->
+            <LinearLayout
+                android:id="@+id/noticeCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:background="@drawable/bg_notice_card"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <FrameLayout
+                    android:layout_width="54dp"
+                    android:layout_height="54dp">
+
+                    <ImageView
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/bg_circle_blue"
+                        android:importantForAccessibility="no"
+                        android:padding="13dp"
+                        android:src="@drawable/ic_bell" />
+
+                    <View
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_gravity="top|end"
+                        android:background="@drawable/bg_dot_red" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins_bold"
+                        android:text="NOTICE"
+                        android:textColor="#FFFFFF"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/tvNoticeText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:fontFamily="@font/poppins_regular"
+                        android:maxLines="2"
+                        android:text="The New Mid-term Schedule is now posted and finalized. View Details."
+                        android:textColor="#D6E4F5"
+                        android:textSize="14sp" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:layout_marginTop="6dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_clock" />
+
+                        <TextView
+                            android:id="@+id/tvNoticeTime"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:fontFamily="@font/poppins_regular"
+                            android:text="Today, 12:00 PM"
+                            android:textColor="#B8CCE6"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_circle_glass"
+                    android:importantForAccessibility="no"
+                    android:padding="7dp"
+                    android:src="@drawable/ic_chevron_right" />
+            </LinearLayout>
+
+            <!-- Section title -->
+            <TextView
+                android:id="@+id/tvModulesTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:fontFamily="@font/poppins_bold"
+                android:text="Campus Modules"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp" />
+
+            <View
+                android:layout_width="38dp"
+                android:layout_height="3dp"
+                android:layout_marginTop="2dp"
+                android:background="@drawable/bg_underline" />
+
+            <!-- Module grid -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvModules"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="-6dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="-6dp"
+                android:overScrollMode="never" />
+
+            <!-- SOS banner -->
+            <LinearLayout
+                android:id="@+id/sosBanner"
+                android:layout_width="match_parent"
+                android:layout_height="78dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="24dp"
+                android:background="@drawable/bg_sos_banner"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="22dp"
+                android:paddingEnd="14dp">
+
+                <ImageView
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_sos"
+                    app:tint="#FF5A5F" />
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="16dp"
+                    android:background="#44FFFFFF" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins_bold"
+                        android:text="CAMPUS SOS — EMERGENCY"
+                        android:textColor="#FFFFFF"
+                        android:textSize="15sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins_regular"
+                        android:text="Tap for Immediate Assistance"
+                        android:textColor="#F2D4D6"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_circle_red"
+                    android:importantForAccessibility="no"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_chevron_right" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</FrameLayout>
