@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Toast;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -129,7 +130,9 @@ public class LoginActivity extends AppCompatActivity {
         db.collection("users").document(uid).get()
                 .addOnSuccessListener(doc -> {
                     String role = doc.exists() ? doc.getString("role") : null;
-                    goNext(UserModel.ROLE_ADMIN.equals(role));
+                    boolean isAdmin = role != null && role.trim().equalsIgnoreCase("admin");
+                    Log.d("ROLE", "role=" + role + " isAdmin=" + isAdmin);
+                    goNext(isAdmin);
                 })
                 .addOnFailureListener(e -> {
                     auth.signOut();
@@ -142,6 +145,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void goNext(boolean isAdmin) {
         Class<?> target = isAdmin ? AdminDashboardActivity.class : DashboardActivity.class;
+        Log.d("ROLE", "going to " + target.getSimpleName());
         Intent i = new Intent(this, target);
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(i);

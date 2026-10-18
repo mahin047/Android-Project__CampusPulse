@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_dashboard">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingTop="28dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="8dp">
+
+            <ImageView
+                android:id="@+id/btnBack"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Back"
+                android:padding="10dp"
+                android:src="@drawable/ic_back"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:fontFamily="@font/poppins_bold"
+                android:text="Notices"
+                android:textColor="#FFFFFF"
+                android:textSize="24sp"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:id="@+id/tvCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/poppins_regular"
+                android:textColor="#9DB2D1"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipToPadding="false"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/chipRow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvNotices"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingStart="16dp"
+                android:paddingTop="14dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="100dp" />
+
+            <LinearLayout
+                android:id="@+id/emptyState"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_bell"
+                    app:tint="#4A5F85" />
+
+                <TextView
+                    android:id="@+id/tvEmptyTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:fontFamily="@font/poppins_bold"
+                    android:textColor="#FFFFFF"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/tvEmptySub"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/poppins_regular"
+                    android:gravity="center"
+                    android:paddingStart="32dp"
+                    android:paddingEnd="32dp"
+                    android:textColor="#9DB2D1"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/loading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:indeterminate="true"
+                app:indicatorColor="#2DD4BF" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fabAdd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="20dp"
+        android:fontFamily="@font/poppins_bold"
+        android:text="New notice"
+        android:textColor="#06201E"
+        android:visibility="gone"
+        app:backgroundTint="#F5B942"
+        app:icon="@drawable/ic_add"
+        app:iconTint="#06201E"
+        tools:ignore="HardcodedText" />
+</FrameLayout>

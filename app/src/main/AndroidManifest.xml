@@ -41,7 +41,18 @@
             android:name=".ModuleActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
-
+        <activity
+            android:name=".NoticesActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".AddNoticeActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".NoticeDetailActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 
 </manifest>

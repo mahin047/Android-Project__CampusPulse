@@ -6,8 +6,10 @@ plugins {
 
 android {
     namespace = "com.campuspulse.app"
-    compileSdk {
-        version = release(37)
+    compileSdk = 37
+
+    buildFeatures {
+        viewBinding = true
     }
 
     defaultConfig {

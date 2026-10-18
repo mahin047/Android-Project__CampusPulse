@@ -8,6 +8,11 @@ import android.widget.PopupMenu;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
+import java.util.Date;
+
 import com.campuspulse.app.databinding.ActivityDashboardBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -22,6 +27,7 @@ public class DashboardActivity extends AppCompatActivity {
     private static final String TAG = "LIFECYCLE";
 
     private ActivityDashboardBinding binding;
+    private ListenerRegistration noticeReg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,8 +40,7 @@ public class DashboardActivity extends AppCompatActivity {
         loadUserName();
         setupModules();
 
-        binding.noticeCard.setOnClickListener(v ->
-                open("Notices", "Latest notices will appear here (Day 4)."));
+        binding.noticeCard.setOnClickListener(v -> openNotices());
         binding.sosBanner.setOnClickListener(v ->
                 open("Campus SOS", "The emergency alert is built on Day 9."));
         binding.tvAvatar.setOnClickListener(v -> showProfileMenu());
@@ -83,8 +88,10 @@ public class DashboardActivity extends AppCompatActivity {
 
         binding.rvModules.setLayoutManager(new GridLayoutManager(this, 2));
         binding.rvModules.setNestedScrollingEnabled(false);
-        binding.rvModules.setAdapter(new ModuleAdapter(items,
-                item -> open(item.getTitle(), item.getNote())));
+        binding.rvModules.setAdapter(new ModuleAdapter(items, item -> {
+            if ("Notices".equals(item.getTitle())) openNotices();
+            else open(item.getTitle(), item.getNote());
+        }));
     }
 
     // ---------- Navigation ----------
@@ -93,6 +100,27 @@ public class DashboardActivity extends AppCompatActivity {
         i.putExtra(ModuleActivity.EXTRA_TITLE, title);     // data passed to next Activity
         i.putExtra(ModuleActivity.EXTRA_NOTE, note);
         startActivity(i);
+    }
+    private void openNotices() {
+        startActivity(new Intent(this, NoticesActivity.class));
+    }
+
+    private void listenLatestNotice() {
+        noticeReg = FirebaseFirestore.getInstance().collection("notices")
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .limit(1)
+                .addSnapshotListener((snap, e) -> {
+                    if (e != null || snap == null) return;
+                    if (snap.isEmpty()) {
+                        binding.tvNoticeText.setText("No notices yet. Check back soon.");
+                        binding.tvNoticeTime.setText("—");
+                        return;
+                    }
+                    DocumentSnapshot d = snap.getDocuments().get(0);
+                    binding.tvNoticeText.setText(d.getString("title"));
+                    Date t = d.getDate("createdAt", DocumentSnapshot.ServerTimestampBehavior.ESTIMATE);
+                    binding.tvNoticeTime.setText(TimeUtil.dashboardTime(t));
+                });
     }
 
     private void showProfileMenu() {
@@ -125,10 +153,18 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     // ---------- Lifecycle logging (Logcat-এ "LIFECYCLE" খোঁজো) ----------
-    @Override protected void onStart()   { super.onStart();   Log.d(TAG, "Dashboard onStart"); }
+    @Override protected void onStart() {
+        super.onStart();
+        Log.d(TAG, "Dashboard onStart");
+        listenLatestNotice();
+    }
     @Override protected void onResume()  { super.onResume();  Log.d(TAG, "Dashboard onResume"); }
     @Override protected void onPause()   { super.onPause();   Log.d(TAG, "Dashboard onPause"); }
-    @Override protected void onStop()    { super.onStop();    Log.d(TAG, "Dashboard onStop"); }
+    @Override protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "Dashboard onStop");
+        if (noticeReg != null) { noticeReg.remove(); noticeReg = null; }
+    }
     @Override protected void onRestart() { super.onRestart(); Log.d(TAG, "Dashboard onRestart"); }
     @Override protected void onDestroy() { super.onDestroy(); Log.d(TAG, "Dashboard onDestroy"); }
 }

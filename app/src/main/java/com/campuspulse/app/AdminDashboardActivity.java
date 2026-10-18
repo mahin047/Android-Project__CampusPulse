@@ -27,6 +27,9 @@ public class AdminDashboardActivity extends AppCompatActivity {
                             "Welcome, " + doc.getString("name") + " (admin)"));
         }
 
+        binding.btnNotices.setOnClickListener(v ->
+                startActivity(new Intent(this, NoticesActivity.class)));
+
         binding.btnLogout.setOnClickListener(v -> {
             FirebaseAuth.getInstance().signOut();
             Intent i = new Intent(this, LoginActivity.class);

@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_splash"
+    android:background="@drawable/bg_dashboard"
     android:gravity="center"
     android:orientation="vertical"
     android:padding="24dp">
@@ -14,15 +14,25 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/poppins_bold"
         android:text="Welcome"
-        android:textColor="@color/admin_gold"
+        android:textColor="#F5B942"
         android:textSize="22sp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnNotices"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Manage notices"
+        android:textAllCaps="false"
+        android:textColor="#06201E"
+        app:backgroundTint="#F5B942" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnLogout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="12dp"
         android:text="Log out"
         android:textAllCaps="false"
-        app:backgroundTint="@color/danger" />
+        app:backgroundTint="#D44458" />
 </LinearLayout>
