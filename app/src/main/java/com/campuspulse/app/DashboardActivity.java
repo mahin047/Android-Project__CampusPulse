@@ -89,8 +89,11 @@ public class DashboardActivity extends AppCompatActivity {
         binding.rvModules.setLayoutManager(new GridLayoutManager(this, 2));
         binding.rvModules.setNestedScrollingEnabled(false);
         binding.rvModules.setAdapter(new ModuleAdapter(items, item -> {
-            if ("Notices".equals(item.getTitle())) openNotices();
-            else open(item.getTitle(), item.getNote());
+            switch (item.getTitle()) {
+                case "Notices": openNotices(); break;
+                case "Events": startActivity(new Intent(this, EventsActivity.class)); break;
+                default: open(item.getTitle(), item.getNote());
+            }
         }));
     }
 
