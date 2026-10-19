@@ -34,8 +34,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    buildFeatures {
-        viewBinding = true
+
+    sourceSets {
+        getByName("main") {
+            java.directories.add("build/generated/data_binding_base_class_source_out/debug/out")
+        }
     }
 }
 
