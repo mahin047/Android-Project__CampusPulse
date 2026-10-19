@@ -92,6 +92,7 @@ public class DashboardActivity extends AppCompatActivity {
             switch (item.getTitle()) {
                 case "Notices": openNotices(); break;
                 case "Events": startActivity(new Intent(this, EventsActivity.class)); break;
+                case "Lost & Found": startActivity(new Intent(this, LostFoundActivity.class)); break;
                 default: open(item.getTitle(), item.getNote());
             }
         }));

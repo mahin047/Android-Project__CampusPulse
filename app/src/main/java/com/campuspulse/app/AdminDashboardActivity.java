@@ -33,6 +33,9 @@ public class AdminDashboardActivity extends AppCompatActivity {
         binding.btnEvents.setOnClickListener(v ->
                 startActivity(new Intent(this, EventsActivity.class)));
 
+        binding.btnLostFound.setOnClickListener(v ->
+                startActivity(new Intent(this, LostFoundActivity.class)));
+
         binding.btnLogout.setOnClickListener(v -> {
             FirebaseAuth.getInstance().signOut();
             Intent i = new Intent(this, LoginActivity.class);

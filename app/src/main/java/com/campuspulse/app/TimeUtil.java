@@ -45,4 +45,21 @@ public class TimeUtil {
     public static String eventFull(Date d) {
         return d == null ? "--" : new SimpleDateFormat("EEE, dd MMM yyyy  •  hh:mm a", Locale.getDefault()).format(d);
     }
+    public static String ago(Date d) {
+        if (d == null) return "Just now";
+        long min = (System.currentTimeMillis() - d.getTime()) / 60000L;
+        if (min < 1) return "Just now";
+        if (min < 60) return min + " min ago";
+        long h = min / 60;
+        if (h < 24) return h + (h == 1 ? " hour ago" : " hours ago");
+        long days = h / 24;
+        if (days == 1) return "Yesterday";
+        if (days < 7) return days + " days ago";
+        return listTime(d);
+    }
+
+    public static String dateOnly(Date d) {
+        if (d == null) return "--";
+        return new SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(d);
+    }
 }

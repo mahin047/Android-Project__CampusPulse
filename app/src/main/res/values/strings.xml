@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">CampusPulse</string>
+    <string name="lost">LOST</string>
+    <string name="found">FOUND</string>
+    <string name="lost_on">Lost on %1$s  •  %2$s</string>
+    <string name="found_on">Found on %1$s  •  %2$s</string>
 </resources>

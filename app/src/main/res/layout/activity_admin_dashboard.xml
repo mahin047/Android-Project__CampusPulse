@@ -38,6 +38,16 @@
         app:backgroundTint="#F5B942" />
 
     <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnLostFound"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Lost &amp; Found"
+        android:textAllCaps="false"
+        android:textColor="#06201E"
+        app:backgroundTint="#F5B942" />
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnLogout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
