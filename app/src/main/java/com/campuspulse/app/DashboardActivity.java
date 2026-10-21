@@ -42,7 +42,7 @@ public class DashboardActivity extends AppCompatActivity {
 
         binding.noticeCard.setOnClickListener(v -> openNotices());
         binding.sosBanner.setOnClickListener(v ->
-                open("Campus SOS", "The emergency alert is built on Day 9."));
+                startActivity(new Intent(this, SosActivity.class)));
         binding.tvAvatar.setOnClickListener(v -> showProfileMenu());
 
         playIntro();

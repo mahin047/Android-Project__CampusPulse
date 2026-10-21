@@ -6,6 +6,23 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.PopupMenu;
+import android.animation.ObjectAnimator;
+import android.content.Context;
+import android.os.Build;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -34,6 +51,13 @@ public class AdminDashboardActivity extends AppCompatActivity implements Inciden
     private IncidentAdapter attentionAdapter;
     private final List<ListenerRegistration> regs = new ArrayList<>();
     private String uid;
+
+    private DatabaseReference sosRef;
+    private ValueEventListener sosListener;
+    private final Set<String> seenSos = new HashSet<>();
+    private boolean sosFirstLoad = true;
+    private boolean sosDeniedShown = false;
+    private ObjectAnimator bannerPulse;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,7 +121,11 @@ public class AdminDashboardActivity extends AppCompatActivity implements Inciden
         binding.cardEvents.setup("Upcoming events", R.drawable.ic_event, Color.parseColor("#3FE0B0"));
         binding.cardUsers.setup("Students", R.drawable.ic_people, Color.parseColor("#9A8BFF"));
         binding.cardSos.setup("SOS alerts", R.drawable.ic_sos, Color.parseColor("#FF8484"));
-        binding.cardSos.setValueText("Day 9"); // SOS কাল বানাব
+        binding.cardSos.setValue(0);
+        binding.cardSos.setOnClickListener(v ->
+                startActivity(new Intent(this, SosAlertsActivity.class)));
+        binding.sosBanner.setOnClickListener(v ->
+                startActivity(new Intent(this, SosAlertsActivity.class)));
     }
 
     // ---------- needs attention (reuse IncidentAdapter) ----------
@@ -194,6 +222,7 @@ public class AdminDashboardActivity extends AppCompatActivity implements Inciden
         db.collection("users").whereEqualTo("role", "user").count().get(AggregateSource.SERVER)
                 .addOnSuccessListener(r -> binding.cardUsers.setValue((int) r.getCount()))
                 .addOnFailureListener(e -> binding.cardUsers.setValueText("–"));
+        listenSos();
     }
 
     @Override
@@ -201,6 +230,7 @@ public class AdminDashboardActivity extends AppCompatActivity implements Inciden
         super.onStop();
         for (ListenerRegistration r : regs) r.remove();
         regs.clear();
+        stopSos();
     }
 
     // ---------- menu ----------
@@ -235,5 +265,78 @@ public class AdminDashboardActivity extends AppCompatActivity implements Inciden
         v.animate().alpha(1f).translationY(0f)
                 .setStartDelay(delay).setDuration(500)
                 .setInterpolator(new DecelerateInterpolator()).start();
+    }
+
+    // ---------- live SOS (Realtime Database) ----------
+    private void listenSos() {
+        sosFirstLoad = true;
+        seenSos.clear();
+        sosRef = FirebaseDatabase.getInstance().getReference("sos_alerts");
+        sosListener = new ValueEventListener() {
+            @Override public void onDataChange(@NonNull DataSnapshot snap) {
+                int unanswered = 0;
+                boolean fresh = false;
+                for (DataSnapshot c : snap.getChildren()) {
+                    SosAlertModel m = SosAlertModel.from(c);
+                    if (SosAlertModel.ACTIVE.equals(m.getStatus())) {
+                        unanswered++;
+                        if (seenSos.add(m.getId()) && !sosFirstLoad) fresh = true;
+                    }
+                }
+                sosFirstLoad = false;
+                binding.cardSos.setValue(unanswered);
+                showSosBanner(unanswered);
+                if (fresh) alertAdmin();
+            }
+
+            @Override public void onCancelled(@NonNull DatabaseError e) {
+                binding.cardSos.setValueText("!");
+                if (!sosDeniedShown) {
+                    sosDeniedShown = true;
+                    Toast.makeText(AdminDashboardActivity.this,
+                            "SOS feed denied. Add your UID under /admins in Realtime Database.",
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+        };
+        sosRef.addValueEventListener(sosListener);
+    }
+
+    private void stopSos() {
+        if (sosRef != null && sosListener != null) sosRef.removeEventListener(sosListener);
+        sosRef = null;
+        sosListener = null;
+        if (bannerPulse != null) { bannerPulse.cancel(); bannerPulse = null; }
+    }
+
+    private void showSosBanner(int count) {
+        if (count <= 0) {
+            binding.sosBanner.setVisibility(View.GONE);
+            if (bannerPulse != null) { bannerPulse.cancel(); bannerPulse = null; }
+            binding.sosBanner.setAlpha(1f);
+            return;
+        }
+        binding.tvSosBannerTitle.setText(count == 1 ? "1 active SOS alert" : count + " active SOS alerts");
+        binding.sosBanner.setVisibility(View.VISIBLE);
+        if (bannerPulse == null) {
+            bannerPulse = ObjectAnimator.ofFloat(binding.sosBanner, "alpha", 1f, 0.55f);
+            bannerPulse.setDuration(700);
+            bannerPulse.setRepeatMode(ObjectAnimator.REVERSE);
+            bannerPulse.setRepeatCount(ObjectAnimator.INFINITE);
+            bannerPulse.start();
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private void alertAdmin() {
+        Toast.makeText(this, "🚨 New SOS alert!", Toast.LENGTH_LONG).show();
+        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        if (v == null || !v.hasVibrator()) return;
+        long[] pattern = {0, 400, 200, 400, 200, 800};
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            v.vibrate(VibrationEffect.createWaveform(pattern, -1));
+        } else {
+            v.vibrate(pattern, -1);
+        }
     }
 }
