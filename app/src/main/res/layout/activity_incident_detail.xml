@@ -373,6 +373,21 @@
                     android:textColor="#FFFFFF"
                     app:cornerRadius="26dp"
                     app:strokeColor="#4D6FA3" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDelete"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="10dp"
+                    android:fontFamily="@font/poppins_bold"
+                    android:text="Delete this report"
+                    android:textAllCaps="false"
+                    android:textColor="#FF8A95"
+                    android:visibility="gone"
+                    app:cornerRadius="26dp"
+                    app:strokeColor="#80D44458" />
+
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

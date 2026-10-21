@@ -28,7 +28,7 @@ import java.util.Locale;
 
 public class LostFoundActivity extends AppCompatActivity implements LostFoundAdapter.Listener {
 
-    private static final String[] FILTERS = {"All", "Lost", "Found", "My posts"};
+    private static final String[] FILTERS = {"All", "Lost", "Found", "Resolved", "My posts"};
 
     private ActivityLostFoundBinding binding;
     private FirebaseFirestore db;
@@ -139,6 +139,7 @@ public class LostFoundActivity extends AppCompatActivity implements LostFoundAda
                 case "My posts": if (!mine) continue; break;
                 case "Lost": if (!m.isLost() || m.isResolved()) continue; break;
                 case "Found": if (m.isLost() || m.isResolved()) continue; break;
+                case "Resolved": if (!m.isResolved()) continue; break;
                 default: if (m.isResolved()) continue; // "All" shows open items only
             }
             if (!query.isEmpty() && !matches(m, query)) continue;
@@ -153,9 +154,12 @@ public class LostFoundActivity extends AppCompatActivity implements LostFoundAda
                 showEmpty("No results", "Nothing matches \"" + query + "\".");
             } else if (filter.equals("My posts")) {
                 showEmpty("You haven't posted anything", "Tap Post item to report a lost or found item.");
+            } else if (filter.equals("Resolved")) {
+                showEmpty("No resolved posts", "Items that were returned will be listed here.");
+            } else if (filter.equals("All")) {
+                showEmpty("Nothing here yet", "Be the first to post a lost or found item.");
             } else {
-                showEmpty("Nothing here yet", "Be the first to post a " + filter.toLowerCase(Locale.ROOT)
-                        .replace("all", "lost or found") + " item.");
+                showEmpty("Nothing here yet", "No open " + filter.toLowerCase(Locale.ROOT) + " items right now.");
             }
         } else {
             binding.emptyState.setVisibility(View.GONE);

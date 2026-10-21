@@ -9,6 +9,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.WriteBatch;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.ColorUtils;
@@ -34,6 +37,7 @@ public class IncidentDetailActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private String incId, uid, myName = "Administration";
     private boolean isAdmin = false, noteFilled = false, photoRequested = false, busy = false;
+    private boolean deleting = false;
     private IncidentModel item;
     private ListenerRegistration reg;
     private final ExecutorService io = Executors.newSingleThreadExecutor();
@@ -54,6 +58,7 @@ public class IncidentDetailActivity extends AppCompatActivity {
         b.btnMap.setOnClickListener(v -> openMap());
         b.btnPrimary.setOnClickListener(v -> advanceStatus());
         b.btnSaveNote.setOnClickListener(v -> saveNoteOnly());
+        b.btnDelete.setOnClickListener(v -> confirmDelete());
 
         db.collection("users").document(uid).get().addOnSuccessListener(doc -> {
             String role = doc.getString("role");
@@ -70,6 +75,7 @@ public class IncidentDetailActivity extends AppCompatActivity {
         super.onStart();
         reg = db.collection("incidents").document(incId).addSnapshotListener((snap, e) -> {
             if (e != null) return;
+            if (deleting) return; // we are deleting it ourselves; the success handler closes the screen
             if (snap == null || !snap.exists()) {
                 Toast.makeText(this, "This report was removed.", Toast.LENGTH_SHORT).show();
                 finish();
@@ -150,6 +156,9 @@ public class IncidentDetailActivity extends AppCompatActivity {
         b.adminPanel.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
         if (!isAdmin) return;
 
+        // delete is offered only after the report is resolved
+        b.btnDelete.setVisibility(item.step() == 2 ? View.VISIBLE : View.GONE);
+
         if (!noteFilled) { // fill once, so we never overwrite what the admin is typing
             b.etNote.setText(item.getAdminNote());
             noteFilled = true;
@@ -167,6 +176,7 @@ public class IncidentDetailActivity extends AppCompatActivity {
         b.btnPrimary.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor(color)));
         b.btnPrimary.setEnabled(true);
         b.btnSaveNote.setEnabled(true);
+        b.btnDelete.setEnabled(true);
     }
 
     // ---------- photo: fetched once, decoded on a background thread ----------
@@ -272,8 +282,44 @@ public class IncidentDetailActivity extends AppCompatActivity {
             b.btnPrimary.setEnabled(false);
             b.btnSaveNote.setEnabled(false);
             b.btnPrimary.setText("Please wait...");
+            b.btnDelete.setEnabled(false);
         } else {
             renderAdminPanel();
         }
+    }
+    // ---------- admin: delete a resolved report (and its photo) ----------
+    private void confirmDelete() {
+        if (item == null || !isAdmin || item.step() != 2) return;
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Delete this report?")
+                .setMessage("The report and its photo will be removed permanently. "
+                        + "The student will no longer see it. This cannot be undone.")
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Delete", (d, w) -> deleteReport())
+                .show();
+    }
+
+    private void deleteReport() {
+        setBusy(true);
+        deleting = true;
+
+        DocumentReference ref = db.collection("incidents").document(incId);
+        WriteBatch batch = db.batch();
+        if (item.hasPhoto()) {
+            batch.delete(ref.collection("attachments").document("photo"));
+        }
+        batch.delete(ref);
+
+        batch.commit()
+                .addOnSuccessListener(v -> {
+                    Toast.makeText(this, "Report deleted.", Toast.LENGTH_SHORT).show();
+                    finish();
+                })
+                .addOnFailureListener(e -> {
+                    deleting = false;
+                    Toast.makeText(this, "Could not delete. Check your internet.",
+                            Toast.LENGTH_LONG).show();
+                    setBusy(false);
+                });
     }
 }
