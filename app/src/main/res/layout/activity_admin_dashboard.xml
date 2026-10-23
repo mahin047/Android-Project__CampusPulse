@@ -19,6 +19,19 @@
             android:paddingEnd="20dp"
             android:paddingBottom="24dp">
 
+            <TextView
+                android:id="@+id/tvOffline"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:accessibilityLiveRegion="polite"
+                android:background="@drawable/bg_banner"
+                android:fontFamily="@font/poppins_bold"
+                android:padding="12dp"
+                android:textColor="#06201E"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
             <!-- Header -->
             <LinearLayout
                 android:id="@+id/headerRow"

@@ -79,6 +79,8 @@ public class AddNoticeActivity extends AppCompatActivity {
         notice.put("category", category);
         notice.put("priority", priority);
         notice.put("authorName", authorName);
+        FirebaseUser cu = FirebaseAuth.getInstance().getCurrentUser();
+        if (cu != null) notice.put("authorUid", cu.getUid());
         notice.put("createdAt", FieldValue.serverTimestamp());
 
         db.collection("notices").add(notice)

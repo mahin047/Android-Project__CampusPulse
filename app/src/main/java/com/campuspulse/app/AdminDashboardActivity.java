@@ -59,11 +59,14 @@ public class AdminDashboardActivity extends AppCompatActivity implements Inciden
     private boolean sosDeniedShown = false;
     private ObjectAnimator bannerPulse;
 
+    private ConnectivityBanner banner;   // field
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityAdminDashboardBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        banner = new ConnectivityBanner(this, binding.tvOffline);
 
         db = FirebaseFirestore.getInstance();
         FirebaseUser u = FirebaseAuth.getInstance().getCurrentUser();
@@ -173,6 +176,7 @@ public class AdminDashboardActivity extends AppCompatActivity implements Inciden
     protected void onStart() {
         super.onStart();
         if (uid == null) return;
+        banner.start();
 
         // 1) incidents: pending / investigating count + attention list
         regs.add(db.collection("incidents").addSnapshotListener((snap, e) -> {
@@ -231,6 +235,7 @@ public class AdminDashboardActivity extends AppCompatActivity implements Inciden
         for (ListenerRegistration r : regs) r.remove();
         regs.clear();
         stopSos();
+        banner.stop();
     }
 
     // ---------- menu ----------

@@ -38,11 +38,14 @@ public class NoticesActivity extends AppCompatActivity implements NoticeAdapter.
     private String filter = "All";
     private boolean isAdmin = false;
 
+    private ConnectivityBanner banner;   // field
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityNoticesBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        banner = new ConnectivityBanner(this, binding.tvOffline);
 
         db = FirebaseFirestore.getInstance();
 
@@ -63,6 +66,7 @@ public class NoticesActivity extends AppCompatActivity implements NoticeAdapter.
     protected void onStart() {
         super.onStart();
         startListening();
+        banner.start();
     }
 
     @Override
@@ -72,6 +76,7 @@ public class NoticesActivity extends AppCompatActivity implements NoticeAdapter.
             registration.remove();
             registration = null;
         }
+        banner.stop();
     }
 
     private void startListening() {

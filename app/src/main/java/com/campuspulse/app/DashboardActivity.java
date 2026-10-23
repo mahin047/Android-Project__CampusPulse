@@ -4,6 +4,25 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.PopupMenu;
+import android.Manifest;
+import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.provider.Settings;
+import android.widget.Toast;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -29,12 +48,35 @@ public class DashboardActivity extends AppCompatActivity {
     private ActivityDashboardBinding binding;
     private ListenerRegistration noticeReg;
 
+    private ConnectivityBanner banner;
+    private boolean noticeReceiverOn = false;
+
+    // dynamic receiver: app সামনে থাকলে নতুন notice এ Snackbar
+    private final BroadcastReceiver noticeReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context c, Intent i) {
+            String title = i.getStringExtra(NoticeDetailActivity.EXTRA_TITLE);
+            Snackbar.make(binding.getRoot(), "New notice: " + (title == null ? "" : title),
+                            Snackbar.LENGTH_LONG)
+                    .setAction("View", v -> openNotices())
+                    .show();
+        }
+    };
+
+    // runtime permission launcher (Android 13+)
+    private final ActivityResultLauncher<String> notifLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(), granted -> Toast.makeText(this,
+                    granted ? "Notifications enabled ✓"
+                            : "No problem. You can turn them on later from the profile menu.",
+                    Toast.LENGTH_LONG).show());
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "Dashboard onCreate");
         binding = ActivityDashboardBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        banner = new ConnectivityBanner(this, binding.tvOffline);
 
         binding.tvGreeting.setText(greetingForNow());
         loadUserName();
@@ -130,8 +172,13 @@ public class DashboardActivity extends AppCompatActivity {
 
     private void showProfileMenu() {
         PopupMenu menu = new PopupMenu(this, binding.tvAvatar);
-        menu.getMenu().add(0, 1, 0, "Log out");
+        menu.getMenu().add(0, 2, 0, "Notifications");
+        menu.getMenu().add(0, 1, 1, "Log out");
         menu.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == 2) {
+                onNotificationsMenu();
+                return true;
+            }
             FirebaseAuth.getInstance().signOut();
             Intent i = new Intent(this, LoginActivity.class);
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -162,6 +209,11 @@ public class DashboardActivity extends AppCompatActivity {
         super.onStart();
         Log.d(TAG, "Dashboard onStart");
         listenLatestNotice();
+        banner.start();
+        ContextCompat.registerReceiver(this, noticeReceiver,
+                new IntentFilter(NoticeAlerts.ACTION_NEW_NOTICE), ContextCompat.RECEIVER_NOT_EXPORTED);
+        noticeReceiverOn = true;
+        maybeAskNotifications();
     }
     @Override protected void onResume()  { super.onResume();  Log.d(TAG, "Dashboard onResume"); }
     @Override protected void onPause()   { super.onPause();   Log.d(TAG, "Dashboard onPause"); }
@@ -169,7 +221,62 @@ public class DashboardActivity extends AppCompatActivity {
         super.onStop();
         Log.d(TAG, "Dashboard onStop");
         if (noticeReg != null) { noticeReg.remove(); noticeReg = null; }
+        banner.stop();
+        if (noticeReceiverOn) {
+            unregisterReceiver(noticeReceiver);
+            noticeReceiverOn = false;
+        }
     }
     @Override protected void onRestart() { super.onRestart(); Log.d(TAG, "Dashboard onRestart"); }
     @Override protected void onDestroy() { super.onDestroy(); Log.d(TAG, "Dashboard onDestroy"); }
+
+    // ---------- notification permission flow ----------
+    private boolean needsNotifPermission() {
+        return Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(this,
+                Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED;
+    }
+
+    /** প্রথমবার: আগে নিজের ভাষায় কারণ বুঝিয়ে, তারপর system dialog। */
+    private void maybeAskNotifications() {
+        if (!needsNotifPermission()) return;
+        SharedPreferences sp = getSharedPreferences("app_prefs", MODE_PRIVATE);
+        if (sp.getBoolean("notif_prompted", false)) return;   // বারবার বিরক্ত নয়
+        sp.edit().putBoolean("notif_prompted", true).apply();
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Stay informed")
+                .setMessage("Allow notifications to hear about new notices and SOS updates, "
+                        + "even when the app is in the background.")
+                .setNegativeButton("Not now", null)
+                .setPositiveButton("Allow", (d, w) ->
+                        notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS))
+                .show();
+    }
+
+    /** Profile menu → Notifications: অবস্থা অনুযায়ী ঠিক কাজটা করে। */
+    private void onNotificationsMenu() {
+        if (needsNotifPermission()) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.POST_NOTIFICATIONS)) {
+                notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);  // একবার deny করেছে, আবার চাওয়া যায়
+            } else {
+                openNotificationSettings();                                    // স্থায়ীভাবে deny, শুধু Settings
+            }
+        } else if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) {
+            openNotificationSettings();                                        // system settings এ বন্ধ করা
+        } else {
+            Toast.makeText(this, "Notifications are on ✓", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void openNotificationSettings() {
+        Intent i = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS) // implicit intent
+                .putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName());
+        try {
+            startActivity(i);
+        } catch (ActivityNotFoundException ex) {
+            Toast.makeText(this, "Open Settings → Apps → CampusPulse → Notifications.",
+                    Toast.LENGTH_LONG).show();
+        }
+    }
 }

@@ -12,6 +12,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
+        android:name=".CampusPulseApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -24,6 +25,13 @@
             android:name=".SosTrackingService"
             android:exported="false"
             android:foregroundServiceType="location" />
+        <receiver
+            android:name=".NoticeAlertReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.campuspulse.app.action.NEW_NOTICE" />
+            </intent-filter>
+        </receiver>
 
         <activity
             android:name=".SosActivity"
