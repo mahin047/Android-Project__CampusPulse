@@ -32,6 +32,10 @@
                 <action android:name="com.campuspulse.app.action.NEW_NOTICE" />
             </intent-filter>
         </receiver>
+        <provider
+            android:name=".CacheProvider"
+            android:authorities="com.campuspulse.app.provider"
+            android:exported="false" />
 
         <activity
             android:name=".SosActivity"

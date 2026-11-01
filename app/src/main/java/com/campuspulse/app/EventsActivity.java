@@ -70,6 +70,13 @@ public class EventsActivity extends AppCompatActivity implements EventAdapter.Li
     @Override
     protected void onStart() {
         super.onStart();
+        // প্রথমে SQLite cache থেকে দ্রুত দেখাও, Firestore এর উত্তর এলে সেটা replace করবে
+        CacheRepository.get(this).loadEvents(cached -> {
+            if (isDestroyed() || !all.isEmpty() || cached.isEmpty()) return;
+            all.addAll(cached);
+            binding.loading.setVisibility(View.GONE);
+            applyFilter();
+        });
         if (all.isEmpty()) binding.loading.setVisibility(View.VISIBLE);
 
         eventsReg = db.collection("events")

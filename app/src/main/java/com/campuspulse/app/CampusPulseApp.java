@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import com.google.firebase.database.FirebaseDatabase;
 
 import androidx.annotation.NonNull;
 
@@ -30,10 +31,14 @@ public class CampusPulseApp extends Application {
     }
 
     private ListenerRegistration noticeReg;
+    private SyncManager sync;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        // Realtime Database এর disk persistence: SOS offline এ লিখলে queue disk এ থাকে (Day 9 এর limitation এর সমাধান)
+        try { FirebaseDatabase.getInstance().setPersistenceEnabled(true); } catch (RuntimeException ignored) { }
+        sync = new SyncManager(this);
         createChannels();
 
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
@@ -69,7 +74,9 @@ public class CampusPulseApp extends Application {
     // ---------- who is signed in ----------
     private void onUserChanged(FirebaseUser user) {
         stopWatching();
+        sync.stop();
         if (user == null) return;
+        sync.start();                 // নতুন: admin ও student দুজনের জন্যই cache sync চলবে
         final String uid = user.getUid();
 
         FirebaseFirestore.getInstance().collection("users").document(uid).get()

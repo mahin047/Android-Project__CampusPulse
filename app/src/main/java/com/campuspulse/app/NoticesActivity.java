@@ -1,8 +1,12 @@
 package com.campuspulse.app;
 
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.database.ContentObserver;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -16,38 +20,52 @@ import com.campuspulse.app.databinding.ActivityNoticesBinding;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class NoticesActivity extends AppCompatActivity implements NoticeAdapter.Listener {
 
-    private static final String[] FILTERS = {"All", "Academic", "Exam", "Event", "General"};
+    private static final String[] FILTERS = {"All", "Saved", "Academic", "Exam", "Event", "General"};
 
     private ActivityNoticesBinding binding;
     private FirebaseFirestore db;
+    private CacheRepository repo;
     private NoticeAdapter adapter;
-    private ListenerRegistration registration;
+    private ConnectivityBanner banner;
 
     private final List<NoticeModel> all = new ArrayList<>();
+    private final Set<String> saved = new HashSet<>();
     private final List<TextView> chips = new ArrayList<>();
     private String filter = "All";
     private boolean isAdmin = false;
+    private long lastSyncMs = 0L;
+    private String uid;
 
-    private ConnectivityBanner banner;   // field
+    // SQLite বদলালে (sync, bookmark) এই observer জাগে
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final Runnable reloadTask = this::reload;
+    private final ContentObserver observer = new ContentObserver(handler) {
+        @Override public void onChange(boolean selfChange) { scheduleReload(); }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityNoticesBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        banner = new ConnectivityBanner(this, binding.tvOffline);
+
+        FirebaseUser u = FirebaseAuth.getInstance().getCurrentUser();
+        if (u == null) { finish(); return; }
+        uid = u.getUid();
 
         db = FirebaseFirestore.getInstance();
+        repo = CacheRepository.get(this);
+        banner = new ConnectivityBanner(this, binding.tvOffline);
 
         adapter = new NoticeAdapter(this);
         binding.rvNotices.setLayoutManager(new LinearLayoutManager(this));
@@ -56,63 +74,69 @@ public class NoticesActivity extends AppCompatActivity implements NoticeAdapter.
         binding.btnBack.setOnClickListener(v -> finish());
         binding.fabAdd.setOnClickListener(v ->
                 startActivity(new Intent(this, AddNoticeActivity.class)));
+        binding.tvSyncInfo.setOnClickListener(v -> showCacheInfo());
 
+        binding.loading.setVisibility(View.VISIBLE);
         buildChips();
         checkAdmin();
     }
 
-    // ---------- lifecycle-aware real-time listener ----------
+    // ---------- lifecycle: observer ও banner ----------
     @Override
     protected void onStart() {
         super.onStart();
-        startListening();
+        if (uid == null) return;
         banner.start();
+        ContentResolver cr = getContentResolver();
+        cr.registerContentObserver(CacheContract.Notices.CONTENT_URI, true, observer);
+        cr.registerContentObserver(CacheContract.Bookmarks.CONTENT_URI, true, observer);
+        cr.registerContentObserver(CacheContract.Meta.CONTENT_URI, true, observer);
+        reload();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (registration != null) {
-            registration.remove();
-            registration = null;
-        }
+        if (uid == null) return;
         banner.stop();
+        getContentResolver().unregisterContentObserver(observer);
+        handler.removeCallbacks(reloadTask);
     }
 
-    private void startListening() {
-        if (all.isEmpty()) binding.loading.setVisibility(View.VISIBLE);
-
-        registration = db.collection("notices")
-                .orderBy("createdAt", Query.Direction.DESCENDING)
-                .addSnapshotListener((snap, e) -> {
-                    binding.loading.setVisibility(View.GONE);
-                    if (e != null || snap == null) {
-                        Toast.makeText(this, "Could not load notices.", Toast.LENGTH_LONG).show();
-                        showEmpty("Couldn't load notices", "Check your internet connection.");
-                        return;
-                    }
-                    all.clear();
-                    for (DocumentSnapshot d : snap.getDocuments()) {
-                        NoticeModel n = new NoticeModel();
-                        n.setId(d.getId());
-                        n.setTitle(d.getString("title"));
-                        n.setBody(d.getString("body"));
-                        n.setCategory(d.getString("category"));
-                        n.setPriority(d.getString("priority"));
-                        n.setAuthorName(d.getString("authorName"));
-                        n.setCreatedAt(d.getDate("createdAt",
-                                DocumentSnapshot.ServerTimestampBehavior.ESTIMATE));
-                        all.add(n);
-                    }
-                    applyFilter();
-                });
+    private void scheduleReload() {
+        handler.removeCallbacks(reloadTask);
+        handler.postDelayed(reloadTask, 150L); // একসাথে অনেক change এলে একবারই reload
     }
 
-    // ---------- filter chips ----------
+    // ---------- SQLite থেকে পড়া (background), UI update (main) ----------
+    private void reload() {
+        repo.loadNotices(uid, data -> {
+            if (isDestroyed()) return;
+            all.clear();
+            all.addAll(data.items);
+            saved.clear();
+            saved.addAll(data.savedIds);
+            lastSyncMs = data.lastSync;
+            binding.loading.setVisibility(View.GONE);
+            applyFilter();
+            updateSyncInfo();
+        });
+    }
+
+    private void updateSyncInfo() {
+        boolean online = NetUtil.isOnline(this);
+        String sync = lastSyncMs == 0L ? "not synced yet" : "synced " + TimeUtil.ago(new Date(lastSyncMs));
+        binding.tvSyncInfo.setText((online ? "● Live  •  " : "○ Offline, showing saved data  •  ")
+                + sync + "  •  tap for cache info");
+        binding.tvSyncInfo.setTextColor(Color.parseColor(online ? "#2DD4BF" : "#F5B942"));
+    }
+
+    // ---------- chips ----------
     private void buildChips() {
         for (String name : FILTERS) {
             TextView chip = new TextView(this);
-            chip.setText(name);
+            chip.setText(name.equals("Saved") ? "★ Saved" : name);
+            chip.setTag(name);
             chip.setTextSize(13);
             chip.setTypeface(ResourcesCompat.getFont(this, R.font.poppins_bold));
             chip.setPadding(dp(16), dp(8), dp(16), dp(8));
@@ -133,7 +157,7 @@ public class NoticesActivity extends AppCompatActivity implements NoticeAdapter.
 
     private void styleChips() {
         for (TextView chip : chips) {
-            boolean selected = chip.getText().toString().equals(filter);
+            boolean selected = filter.equals(chip.getTag());
             chip.setBackgroundResource(selected ? R.drawable.bg_chip_selected : R.drawable.bg_chip);
             chip.setTextColor(selected ? Color.parseColor("#06201E") : Color.parseColor("#C3D2EA"));
         }
@@ -142,14 +166,29 @@ public class NoticesActivity extends AppCompatActivity implements NoticeAdapter.
     private void applyFilter() {
         List<NoticeModel> shown = new ArrayList<>();
         for (NoticeModel n : all) {
-            if (filter.equals("All") || filter.equalsIgnoreCase(n.getCategory())) shown.add(n);
+            boolean match;
+            if (filter.equals("All")) match = true;
+            else if (filter.equals("Saved")) match = saved.contains(n.getId());
+            else match = filter.equalsIgnoreCase(n.getCategory());
+            if (match) shown.add(n);
         }
         adapter.submitList(shown);
         binding.tvCount.setText(shown.size() + (shown.size() == 1 ? " notice" : " notices"));
 
         if (shown.isEmpty()) {
-            if (all.isEmpty()) showEmpty("No notices yet", "New notices from the administration will appear here.");
-            else showEmpty("Nothing in " + filter, "Try another category.");
+            if (all.isEmpty() && lastSyncMs == 0L) {
+                if (NetUtil.isOnline(this)) {
+                    showEmpty("Downloading notices…", "The first sync is in progress.");
+                } else {
+                    showEmpty("Nothing saved yet", "Connect to the internet once so notices can be saved on this phone.");
+                }
+            } else if (all.isEmpty()) {
+                showEmpty("No notices yet", "New notices from the administration will appear here.");
+            } else if (filter.equals("Saved")) {
+                showEmpty("No saved notices", "Open a notice and tap the star to keep it for offline reading.");
+            } else {
+                showEmpty("Nothing in " + filter, "Try another category.");
+            }
         } else {
             binding.emptyState.setVisibility(View.GONE);
             binding.rvNotices.setVisibility(View.VISIBLE);
@@ -165,9 +204,7 @@ public class NoticesActivity extends AppCompatActivity implements NoticeAdapter.
 
     // ---------- admin ----------
     private void checkAdmin() {
-        FirebaseUser u = FirebaseAuth.getInstance().getCurrentUser();
-        if (u == null) return;
-        db.collection("users").document(u.getUid()).get()
+        db.collection("users").document(uid).get()
                 .addOnSuccessListener(doc -> {
                     String role = doc.getString("role");
                     isAdmin = role != null && role.trim().equalsIgnoreCase("admin");
@@ -175,10 +212,41 @@ public class NoticesActivity extends AppCompatActivity implements NoticeAdapter.
                 });
     }
 
+    // ---------- cache info (Callable + Future + aggregate SQL) ----------
+    private void showCacheInfo() {
+        repo.loadStats(uid, s -> {
+            if (isDestroyed()) return;
+            if (s == null) {
+                Toast.makeText(this, "Could not read the cache.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            String msg = "Database: campus_cache.db (SQLite)\n\n"
+                    + "Notices saved: " + s.notices + "\n"
+                    + "By category: " + s.byCategory + "\n"
+                    + "Latest notice: " + (s.latestNotice == 0 ? "-" : TimeUtil.ago(new Date(s.latestNotice))) + "\n"
+                    + "Events saved: " + s.events + "\n"
+                    + "Your saved (★): " + s.saved + "\n\n"
+                    + "Notices synced: " + (s.lastSyncNotices == 0 ? "never" : TimeUtil.ago(new Date(s.lastSyncNotices))) + "\n"
+                    + "Events synced: " + (s.lastSyncEvents == 0 ? "never" : TimeUtil.ago(new Date(s.lastSyncEvents)));
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle("Offline cache")
+                    .setMessage(msg)
+                    .setPositiveButton("Close", null)
+                    .setNeutralButton("Thread demo", (d, w) -> repo.runThreadDemo(text ->
+                            new MaterialAlertDialogBuilder(this)
+                                    .setTitle("Race condition demo")
+                                    .setMessage(text)
+                                    .setPositiveButton("OK", null)
+                                    .show()))
+                    .show();
+        });
+    }
+
     // ---------- adapter callbacks ----------
     @Override
     public void onNoticeClick(NoticeModel n) {
         Intent i = new Intent(this, NoticeDetailActivity.class); // explicit intent
+        i.putExtra(NoticeAlerts.EXTRA_ID, n.getId());            // star এর জন্য id লাগে
         i.putExtra(NoticeDetailActivity.EXTRA_TITLE, n.getTitle());
         i.putExtra(NoticeDetailActivity.EXTRA_BODY, n.getBody());
         i.putExtra(NoticeDetailActivity.EXTRA_CATEGORY, n.getCategory());
@@ -191,7 +259,7 @@ public class NoticesActivity extends AppCompatActivity implements NoticeAdapter.
 
     @Override
     public void onNoticeLongClick(NoticeModel n) {
-        if (!isAdmin) return; // শুধু admin মুছতে পারবে
+        if (!isAdmin) return; // শুধু admin মুছতে পারবে (Firestore থেকে মুছলে sync SQLite থেকেও সরাবে)
         new MaterialAlertDialogBuilder(this)
                 .setTitle("Delete notice?")
                 .setMessage("\"" + n.getTitle() + "\" will be removed for everyone.")

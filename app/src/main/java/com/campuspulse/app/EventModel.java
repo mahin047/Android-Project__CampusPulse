@@ -29,6 +29,19 @@ public class EventModel {
         e.registeredCount = cnt == null ? 0 : cnt.intValue();
         return e;
     }
+    public static EventModel fromCache(String id, String title, String description, String venue,
+                                       String category, long dateTimeMs, int capacity, int registeredCount) {
+        EventModel e = new EventModel();
+        e.id = id;
+        e.title = title;
+        e.description = description;
+        e.venue = venue;
+        e.category = category;
+        e.dateTime = dateTimeMs > 0 ? new Date(dateTimeMs) : null;
+        e.capacity = capacity;
+        e.registeredCount = registeredCount;
+        return e;
+    }
 
     public String getId() { return id; }
     public String getTitle() { return title; }

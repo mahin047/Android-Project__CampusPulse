@@ -6,6 +6,11 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.ColorUtils;
+import android.view.View;
+import android.widget.Toast;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import com.campuspulse.app.databinding.ActivityNoticeDetailBinding;
 
@@ -19,6 +24,7 @@ public class NoticeDetailActivity extends AppCompatActivity {
     public static final String EXTRA_PRIORITY = "n_priority";
     public static final String EXTRA_AUTHOR = "n_author";
     public static final String EXTRA_TIME = "n_time";
+    private boolean saved = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,5 +70,35 @@ public class NoticeDetailActivity extends AppCompatActivity {
         );
 
         b.btnBack.setOnClickListener(v -> finish());
+        String noticeId = getIntent().getStringExtra(NoticeAlerts.EXTRA_ID);
+        FirebaseUser cu = FirebaseAuth.getInstance().getCurrentUser();
+        if (noticeId != null && cu != null) setupSave(b, noticeId, cu.getUid());
+    }
+    private void setupSave(ActivityNoticeDetailBinding b, String noticeId, String uid) {
+        CacheRepository repo = CacheRepository.get(this);
+        b.btnSave.setVisibility(View.VISIBLE);
+        repo.isBookmarked(uid, noticeId, yes -> {
+            saved = yes;
+            paintStar(b);
+        });
+        b.btnSave.setOnClickListener(v -> {
+            b.btnSave.setEnabled(false);
+            repo.toggleBookmark(uid, noticeId, now -> {
+                b.btnSave.setEnabled(true);
+                if (now == null) {
+                    Toast.makeText(this, "Can't save yet. Open the Notices list once while online.",
+                            Toast.LENGTH_LONG).show();
+                    return;
+                }
+                saved = now;
+                paintStar(b);
+                Toast.makeText(this, saved ? "Saved for offline reading ★" : "Removed from saved",
+                        Toast.LENGTH_SHORT).show();
+            });
+        });
+    }
+
+    private void paintStar(ActivityNoticeDetailBinding b) {
+        b.btnSave.setImageResource(saved ? R.drawable.ic_star : R.drawable.ic_star_border);
     }
 }
