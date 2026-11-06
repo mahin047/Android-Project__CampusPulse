@@ -1,0 +1,31 @@
+{
+  "courses": [
+    {
+      "code": "CSE 2105", "title": "Algorithms", "dept": "CSE",
+      "resources": [
+        {"type": "Lecture Notes", "title": "What is an algorithm?", "url": "https://en.wikipedia.org/wiki/Algorithm"},
+        {"type": "Previous Questions", "title": "Algorithms: previous year questions", "url": "https://www.google.com/search?q=algorithms+previous+year+questions+pdf"},
+        {"type": "Lab Materials", "title": "Sorting algorithms lab sheet", "url": "https://en.wikipedia.org/wiki/Sorting_algorithm"},
+        {"type": "Important Topics", "title": "Dynamic programming", "url": "https://en.wikipedia.org/wiki/Dynamic_programming"}
+      ]
+    },
+    {
+      "code": "CSE 2201", "title": "Database Systems", "dept": "CSE",
+      "resources": [
+        {"type": "Lecture Notes", "title": "Relational model basics", "url": "https://en.wikipedia.org/wiki/Relational_database"},
+        {"type": "Previous Questions", "title": "Database: previous year questions", "url": "https://www.google.com/search?q=database+systems+previous+year+questions+pdf"},
+        {"type": "Lab Materials", "title": "SQL practice queries", "url": "https://en.wikipedia.org/wiki/SQL"},
+        {"type": "Important Topics", "title": "Normalization and ACID", "url": "https://en.wikipedia.org/wiki/Database_normalization"}
+      ]
+    },
+    {
+      "code": "CSE 2103", "title": "Object Oriented Programming", "dept": "CSE",
+      "resources": [
+        {"type": "Lecture Notes", "title": "Object-oriented programming", "url": "https://en.wikipedia.org/wiki/Object-oriented_programming"},
+        {"type": "Previous Questions", "title": "OOP: previous year questions", "url": "https://www.google.com/search?q=object+oriented+programming+java+previous+year+questions+pdf"},
+        {"type": "Lab Materials", "title": "Java lab: classes and objects", "url": "https://en.wikipedia.org/wiki/Java_(programming_language)"},
+        {"type": "Important Topics", "title": "Polymorphism and design patterns", "url": "https://en.wikipedia.org/wiki/Software_design_pattern"}
+      ]
+    }
+  ]
+}

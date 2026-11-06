@@ -25,6 +25,7 @@
             android:name=".SosTrackingService"
             android:exported="false"
             android:foregroundServiceType="location" />
+
         <receiver
             android:name=".NoticeAlertReceiver"
             android:exported="false">
@@ -32,6 +33,7 @@
                 <action android:name="com.campuspulse.app.action.NEW_NOTICE" />
             </intent-filter>
         </receiver>
+
         <provider
             android:name=".CacheProvider"
             android:authorities="com.campuspulse.app.provider"
@@ -120,6 +122,22 @@
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".IncidentDetailActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".WeatherActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".ServicesActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".StudyHubActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".AssistantActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
     </application>

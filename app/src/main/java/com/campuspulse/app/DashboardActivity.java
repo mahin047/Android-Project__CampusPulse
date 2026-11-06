@@ -40,6 +40,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import androidx.appcompat.app.AlertDialog;
+import com.campuspulse.app.databinding.DialogFeedbackBinding;
 
 public class DashboardActivity extends AppCompatActivity {
 
@@ -86,6 +88,10 @@ public class DashboardActivity extends AppCompatActivity {
         binding.sosBanner.setOnClickListener(v ->
                 startActivity(new Intent(this, SosActivity.class)));
         binding.tvAvatar.setOnClickListener(v -> showProfileMenu());
+        binding.assistantCard.setOnClickListener(v ->
+                startActivity(new Intent(this, AssistantActivity.class)));
+        binding.tvWeather.setOnClickListener(v ->
+                startActivity(new Intent(this, WeatherActivity.class)));
 
         playIntro();
     }
@@ -121,9 +127,9 @@ public class DashboardActivity extends AppCompatActivity {
                 R.drawable.ic_event, R.drawable.bg_tile_green, "Events are built on Day 5."));
         items.add(new ModuleItem("Lost & Found", "Classic Key/Altes",
                 R.drawable.ic_lost_found, R.drawable.bg_tile_purple, "Lost & Found is built on Day 6."));
-        items.add(new ModuleItem("Reports", "Reports & Feedback",
+        items.add(new ModuleItem("Reports", "TEST123",
                 R.drawable.ic_report, R.drawable.bg_tile_orange, "Incident reports are built on Day 7."));
-        items.add(new ModuleItem("Study", "Atom Model",
+        items.add(new ModuleItem("Study", "Notes & Questions",
                 R.drawable.ic_study, R.drawable.bg_tile_teal, "Study Hub is built on Day 12."));
         items.add(new ModuleItem("Services", "Medical & Wellness",
                 R.drawable.ic_services, R.drawable.bg_tile_red, "Campus Services are built on Day 12."));
@@ -136,6 +142,8 @@ public class DashboardActivity extends AppCompatActivity {
                 case "Events": startActivity(new Intent(this, EventsActivity.class)); break;
                 case "Lost & Found": startActivity(new Intent(this, LostFoundActivity.class)); break;
                 case "Reports": startActivity(new Intent(this, IncidentsActivity.class)); break;
+                case "Study": startActivity(new Intent(this, StudyHubActivity.class)); break;
+                case "Services": startActivity(new Intent(this, ServicesActivity.class)); break;
                 default: open(item.getTitle(), item.getNote());
             }
         }));
@@ -173,10 +181,15 @@ public class DashboardActivity extends AppCompatActivity {
     private void showProfileMenu() {
         PopupMenu menu = new PopupMenu(this, binding.tvAvatar);
         menu.getMenu().add(0, 2, 0, "Notifications");
-        menu.getMenu().add(0, 1, 1, "Log out");
+        menu.getMenu().add(0, 3, 1, "Send feedback");
+        menu.getMenu().add(0, 1, 2, "Log out");
         menu.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == 2) {
                 onNotificationsMenu();
+                return true;
+            }
+            if (item.getItemId() == 3) {
+                showFeedbackDialog();
                 return true;
             }
             FirebaseAuth.getInstance().signOut();
@@ -209,6 +222,8 @@ public class DashboardActivity extends AppCompatActivity {
         super.onStart();
         Log.d(TAG, "Dashboard onStart");
         listenLatestNotice();
+        loadWeather();
+
         banner.start();
         ContextCompat.registerReceiver(this, noticeReceiver,
                 new IntentFilter(NoticeAlerts.ACTION_NEW_NOTICE), ContextCompat.RECEIVER_NOT_EXPORTED);
@@ -279,4 +294,43 @@ public class DashboardActivity extends AppCompatActivity {
                     Toast.LENGTH_LONG).show();
         }
     }
+
+    // ---------- live weather (REST + SQLite cache) ----------
+    private void loadWeather() {
+        WeatherRepository repo = WeatherRepository.get(this);
+        repo.loadCached(r -> showWeather(r));
+        repo.refresh(false, r -> showWeather(r));
+    }
+
+    private void showWeather(WeatherRepository.Result r) {
+        if (isDestroyed() || r == null || r.weather == null) return;
+        binding.tvWeather.setText("Khulna  " + Math.round(r.weather.temp) + "°C");
+    }
+
+    // ---------- feedback (HTTP POST) ----------
+    private void showFeedbackDialog() {
+        DialogFeedbackBinding fb = DialogFeedbackBinding.inflate(getLayoutInflater());
+        AlertDialog d = new MaterialAlertDialogBuilder(this)
+                .setTitle("Send feedback")
+                .setView(fb.getRoot())
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Send", null)   // নিচে নিজে handle করব, যাতে error এ dialog বন্ধ না হয়
+                .create();
+        d.setOnShowListener(x -> d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            String msg = String.valueOf(fb.etMessage.getText()).trim();
+            fb.til.setError(null);
+            if (msg.length() < 5) {
+                fb.til.setError("Write at least 5 characters");
+                return;
+            }
+            v.setEnabled(false);
+            FeedbackApi.send(this, msg, result -> {
+                if (isDestroyed()) return;
+                d.dismiss();
+                Toast.makeText(this, result, Toast.LENGTH_LONG).show();
+            });
+        }));
+        d.show();
+    }
+
 }

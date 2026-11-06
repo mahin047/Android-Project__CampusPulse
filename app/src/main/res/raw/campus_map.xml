@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<campus name="KUET" version="1">
+
+    <place id="library" category="Academic" keywords="library boi pathagar books reading">
+        <name>Central Library</name>
+        <where>Beside the Administrative Building</where>
+        <hours>Sat–Thu, 8:00 AM – 8:00 PM</hours>
+        <phone></phone>
+        <website></website>
+        <lat>22.8991</lat>
+        <lng>89.5027</lng>
+        <note>Reading hall, reference section and digital lab.</note>
+    </place>
+
+    <place id="admin" category="Admin" keywords="admin administration office registrar vc">
+        <name>Administrative Building</name>
+        <where>Main gate side, near the central road</where>
+        <hours>Sun–Thu, 9:00 AM – 5:00 PM</hours>
+        <phone></phone>
+        <website>https://www.kuet.ac.bd</website>
+        <lat>22.8995</lat>
+        <lng>89.5031</lng>
+        <note>Registrar office, accounts and student affairs.</note>
+    </place>
+
+    <place id="cse" category="Academic" keywords="cse computer labs department">
+        <name>CSE Building</name>
+        <where>Academic area, north side</where>
+        <hours>Sun–Thu, 8:30 AM – 5:00 PM</hours>
+        <phone></phone>
+        <website></website>
+        <lat>22.9003</lat>
+        <lng>89.5018</lng>
+        <note>Department office, classrooms and computer labs.</note>
+    </place>
+
+    <place id="eee" category="Academic" keywords="eee electrical electronics">
+        <name>EEE Building</name>
+        <where>Academic area, next to the CSE Building</where>
+        <hours>Sun–Thu, 8:30 AM – 5:00 PM</hours>
+        <phone></phone>
+        <website></website>
+        <lat>22.9001</lat>
+        <lng>89.5012</lng>
+        <note>Electrical and electronic engineering classrooms and labs.</note>
+    </place>
+
+    <place id="auditorium" category="Campus" keywords="auditorium hall seminar programme stage">
+        <name>Central Auditorium</name>
+        <where>East of the Administrative Building</where>
+        <hours>Open during events</hours>
+        <phone></phone>
+        <website></website>
+        <lat>22.8989</lat>
+        <lng>89.5035</lng>
+        <note>Workshops, seminars and cultural programmes are held here.</note>
+    </place>
+
+    <place id="medical" category="Health" keywords="medical doctor clinic hospital health medicine">
+        <name>Medical Center</name>
+        <where>Near the residential area</where>
+        <hours>Open every day, 8:00 AM – 10:00 PM</hours>
+        <phone></phone>
+        <website></website>
+        <lat>22.8985</lat>
+        <lng>89.5019</lng>
+        <note>First aid and basic treatment for students and staff.</note>
+    </place>
+
+    <place id="cafeteria" category="Food" keywords="cafeteria canteen food eat lunch tea">
+        <name>Cafeteria</name>
+        <where>Between the library and the academic area</where>
+        <hours>Open every day, 7:30 AM – 9:00 PM</hours>
+        <phone></phone>
+        <website></website>
+        <lat>22.8993</lat>
+        <lng>89.5011</lng>
+        <note>Snacks, lunch and tea.</note>
+    </place>
+
+    <place id="transport" category="Transport" keywords="transport bus shuttle pickup">
+        <name>Transport Office</name>
+        <where>Near the south gate</where>
+        <hours>Sun–Thu, 8:00 AM – 4:00 PM</hours>
+        <phone></phone>
+        <website></website>
+        <lat>22.8980</lat>
+        <lng>89.5025</lng>
+        <note>Bus schedules and route information.</note>
+    </place>
+
+    <place id="security" category="Safety" keywords="security guard gate police">
+        <name>Security Office</name>
+        <where>Main gate</where>
+        <hours>Open 24 hours</hours>
+        <phone></phone>
+        <website></website>
+        <lat>22.8997</lat>
+        <lng>89.5040</lng>
+        <note>Campus security and lost-property desk.</note>
+    </place>
+
+    <place id="gym" category="Sports" keywords="gym gymnasium sports ground playground tournament">
+        <name>Gymnasium</name>
+        <where>Beside the playground</where>
+        <hours>Open every day, 4:00 PM – 9:00 PM</hours>
+        <phone></phone>
+        <website></website>
+        <lat>22.9008</lat>
+        <lng>89.5030</lng>
+        <note>Indoor games and inter-hall tournaments.</note>
+    </place>
+
+    <place id="emergency" category="Safety" keywords="999 helpline">
+        <name>National Emergency Helpline</name>
+        <where>Free call from any phone</where>
+        <hours>Open 24 hours</hours>
+        <phone>999</phone>
+        <website></website>
+        <note>For life-threatening emergencies call 999 first, then use Campus SOS.</note>
+    </place>
+</campus>
