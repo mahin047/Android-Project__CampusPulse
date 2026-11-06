@@ -11,6 +11,9 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.text.Editable;
+import android.text.TextWatcher;
+import java.util.Locale;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
@@ -42,6 +45,7 @@ public class NoticesActivity extends AppCompatActivity implements NoticeAdapter.
     private final Set<String> saved = new HashSet<>();
     private final List<TextView> chips = new ArrayList<>();
     private String filter = "All";
+    private String query = "";
     private boolean isAdmin = false;
     private long lastSyncMs = 0L;
     private String uid;
@@ -75,6 +79,15 @@ public class NoticesActivity extends AppCompatActivity implements NoticeAdapter.
         binding.fabAdd.setOnClickListener(v ->
                 startActivity(new Intent(this, AddNoticeActivity.class)));
         binding.tvSyncInfo.setOnClickListener(v -> showCacheInfo());
+        binding.etSearch.setHint("Search notices");
+        binding.etSearch.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int a, int b, int c) { }
+            @Override public void onTextChanged(CharSequence s, int a, int b, int c) { }
+            @Override public void afterTextChanged(Editable s) {
+                query = s.toString().trim().toLowerCase(Locale.ROOT);
+                applyFilter();
+            }
+        });
 
         binding.loading.setVisibility(View.VISIBLE);
         buildChips();
@@ -102,6 +115,7 @@ public class NoticesActivity extends AppCompatActivity implements NoticeAdapter.
         getContentResolver().unregisterContentObserver(observer);
         handler.removeCallbacks(reloadTask);
     }
+
 
     private void scheduleReload() {
         handler.removeCallbacks(reloadTask);
@@ -140,6 +154,8 @@ public class NoticesActivity extends AppCompatActivity implements NoticeAdapter.
             chip.setTextSize(13);
             chip.setTypeface(ResourcesCompat.getFont(this, R.font.poppins_bold));
             chip.setPadding(dp(16), dp(8), dp(16), dp(8));
+            chip.setMinimumHeight(dp(48));
+            chip.setGravity(android.view.Gravity.CENTER);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             lp.setMarginEnd(dp(8));
@@ -170,13 +186,19 @@ public class NoticesActivity extends AppCompatActivity implements NoticeAdapter.
             if (filter.equals("All")) match = true;
             else if (filter.equals("Saved")) match = saved.contains(n.getId());
             else match = filter.equalsIgnoreCase(n.getCategory());
+            if (match && !query.isEmpty()) {
+                match = has(n.getTitle()) || has(n.getBody()) || has(n.getCategory());
+            }
             if (match) shown.add(n);
         }
         adapter.submitList(shown);
         binding.tvCount.setText(shown.size() + (shown.size() == 1 ? " notice" : " notices"));
 
         if (shown.isEmpty()) {
-            if (all.isEmpty() && lastSyncMs == 0L) {
+
+            if (!query.isEmpty()) {
+                showEmpty("No results", "Nothing matches \"" + query + "\".");
+            } else if (all.isEmpty() && lastSyncMs == 0L) {
                 if (NetUtil.isOnline(this)) {
                     showEmpty("Downloading notices…", "The first sync is in progress.");
                 } else {
@@ -193,6 +215,9 @@ public class NoticesActivity extends AppCompatActivity implements NoticeAdapter.
             binding.emptyState.setVisibility(View.GONE);
             binding.rvNotices.setVisibility(View.VISIBLE);
         }
+    }
+    private boolean has(String s) {
+        return s != null && s.toLowerCase(Locale.ROOT).contains(query);
     }
 
     private void showEmpty(String title, String sub) {

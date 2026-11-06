@@ -49,7 +49,7 @@ public class ServicesActivity extends AppCompatActivity implements PlaceAdapter.
         b.btnBack.setOnClickListener(v -> finish());
 
         adapter = new PlaceAdapter(this);
-        b.rvItems.setLayoutManager(new GridLayoutManager(this, 2));
+        b.rvItems.setLayoutManager(new GridLayoutManager(this, getResources().getInteger(R.integer.grid_columns)));
         b.rvItems.setAdapter(adapter);
 
         b.etSearch.addTextChangedListener(new TextWatcher() {
@@ -83,6 +83,8 @@ public class ServicesActivity extends AppCompatActivity implements PlaceAdapter.
             chip.setTextSize(13);
             chip.setTypeface(ResourcesCompat.getFont(this, R.font.poppins_bold));
             chip.setPadding(dp(16), dp(8), dp(16), dp(8));
+            chip.setMinimumHeight(dp(48));
+            chip.setGravity(android.view.Gravity.CENTER);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             lp.setMarginEnd(dp(8));

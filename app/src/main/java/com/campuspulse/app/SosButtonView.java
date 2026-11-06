@@ -15,6 +15,7 @@ import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
+import androidx.core.view.ViewCompat;
 
 import androidx.core.content.res.ResourcesCompat;
 
@@ -69,6 +70,10 @@ public class SosButtonView extends View {
             textPaint.setTypeface(ResourcesCompat.getFont(context, R.font.poppins_bold));
             hintPaint.setTypeface(ResourcesCompat.getFont(context, R.font.poppins_regular));
         } catch (RuntimeException ignored) { }
+        ViewCompat.addAccessibilityAction(this, "Send SOS alert now", (view, args) -> {
+            if (isEnabled() && listener != null) listener.onSosTriggered();
+            return true;
+        });
     }
 
     public void setOnSosListener(OnSosListener l) { listener = l; }

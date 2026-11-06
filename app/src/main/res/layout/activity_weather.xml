@@ -27,8 +27,8 @@
 
                 <ImageView
                     android:id="@+id/btnBack"
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="Back"
                     android:padding="10dp"
@@ -46,8 +46,8 @@
 
                 <ImageView
                     android:id="@+id/btnRefresh"
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="Refresh weather"
                     android:padding="10dp"
@@ -203,7 +203,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:fontFamily="@font/poppins_regular"
-                    android:textColor="#6F84A8"
+                    android:textColor="#8FA3C4"
                     android:textSize="11sp" />
             </LinearLayout>
 

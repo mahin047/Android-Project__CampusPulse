@@ -72,6 +72,8 @@ public class AssistantActivity extends AppCompatActivity implements ChatAdapter.
             chip.setTextSize(12);
             chip.setTypeface(ResourcesCompat.getFont(this, R.font.poppins_bold));
             chip.setPadding(dp(14), dp(8), dp(14), dp(8));
+            chip.setMinimumHeight(dp(48));
+            chip.setGravity(android.view.Gravity.CENTER);
             chip.setBackgroundResource(R.drawable.bg_chip);
             chip.setTextColor(Color.parseColor("#C3D2EA"));
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(

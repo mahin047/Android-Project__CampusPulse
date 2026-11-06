@@ -239,6 +239,7 @@
 
             <!-- Campus Assistant -->
             <LinearLayout
+                android:contentDescription="Campus Assistant. Ask about places, events, notices and weather."
                 android:id="@+id/assistantCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -318,6 +319,7 @@
 
             <!-- SOS banner -->
             <LinearLayout
+                android:contentDescription="Campus SOS emergency. Double tap to open the alert screen."
                 android:id="@+id/sosBanner"
                 android:layout_width="match_parent"
                 android:layout_height="78dp"

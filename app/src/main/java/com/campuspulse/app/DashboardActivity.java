@@ -14,6 +14,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.widget.Toast;
+import androidx.core.view.ViewCompat;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -92,7 +93,7 @@ public class DashboardActivity extends AppCompatActivity {
                 startActivity(new Intent(this, AssistantActivity.class)));
         binding.tvWeather.setOnClickListener(v ->
                 startActivity(new Intent(this, WeatherActivity.class)));
-
+        ViewCompat.setAccessibilityHeading(binding.tvModulesTitle, true);
         playIntro();
     }
 
@@ -134,7 +135,7 @@ public class DashboardActivity extends AppCompatActivity {
         items.add(new ModuleItem("Services", "Medical & Wellness",
                 R.drawable.ic_services, R.drawable.bg_tile_red, "Campus Services are built on Day 12."));
 
-        binding.rvModules.setLayoutManager(new GridLayoutManager(this, 2));
+        binding.rvModules.setLayoutManager(new GridLayoutManager(this, getResources().getInteger(R.integer.grid_columns)));
         binding.rvModules.setNestedScrollingEnabled(false);
         binding.rvModules.setAdapter(new ModuleAdapter(items, item -> {
             switch (item.getTitle()) {
@@ -175,6 +176,9 @@ public class DashboardActivity extends AppCompatActivity {
                     binding.tvNoticeText.setText(d.getString("title"));
                     Date t = d.getDate("createdAt", DocumentSnapshot.ServerTimestampBehavior.ESTIMATE);
                     binding.tvNoticeTime.setText(TimeUtil.dashboardTime(t));
+                    binding.tvNoticeText.setText(d.getString("title"));
+                    binding.noticeCard.setContentDescription("Latest notice: " + d.getString("title")
+                            + ". Double tap to open all notices.");
                 });
     }
 

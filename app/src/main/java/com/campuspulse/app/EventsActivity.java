@@ -7,6 +7,9 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.text.Editable;
+import android.text.TextWatcher;
+import java.util.Locale;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
@@ -40,6 +43,7 @@ public class EventsActivity extends AppCompatActivity implements EventAdapter.Li
     private final Set<String> myIds = new HashSet<>();
     private final List<TextView> chips = new ArrayList<>();
     private String filter = "Upcoming";
+    private String query = "";
     private boolean isAdmin = false;
     private String uid;
 
@@ -55,10 +59,19 @@ public class EventsActivity extends AppCompatActivity implements EventAdapter.Li
         uid = u.getUid();
 
         adapter = new EventAdapter(this);
-        binding.rvEvents.setLayoutManager(new GridLayoutManager(this, 2)); // 2-column grid
+        binding.rvEvents.setLayoutManager(new GridLayoutManager(this, getResources().getInteger(R.integer.grid_columns))); // 2-column grid
         binding.rvEvents.setAdapter(adapter);
 
         binding.btnBack.setOnClickListener(v -> finish());
+        binding.etSearch.setHint("Search events");
+        binding.etSearch.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int a, int b, int c) { }
+            @Override public void onTextChanged(CharSequence s, int a, int b, int c) { }
+            @Override public void afterTextChanged(Editable s) {
+                query = s.toString().trim().toLowerCase(Locale.ROOT);
+                applyFilter();
+            }
+        });
         binding.fabAdd.setOnClickListener(v ->
                 startActivity(new Intent(this, AddEventActivity.class)));
 
@@ -118,6 +131,8 @@ public class EventsActivity extends AppCompatActivity implements EventAdapter.Li
             chip.setTextSize(13);
             chip.setTypeface(ResourcesCompat.getFont(this, R.font.poppins_bold));
             chip.setPadding(dp(16), dp(8), dp(16), dp(8));
+            chip.setMinimumHeight(dp(48));
+            chip.setGravity(android.view.Gravity.CENTER);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             lp.setMarginEnd(dp(8));
@@ -144,11 +159,16 @@ public class EventsActivity extends AppCompatActivity implements EventAdapter.Li
     private void applyFilter() {
         List<EventModel> shown = new ArrayList<>();
         for (EventModel e : all) {
+            boolean ok;
             switch (filter) {
-                case "Upcoming": if (!e.isPast()) shown.add(e); break;
-                case "My events": if (myIds.contains(e.getId())) shown.add(e); break;
-                default: if (e.isPast()) shown.add(e); break;
+                case "Upcoming": ok = !e.isPast(); break;
+                case "My events": ok = myIds.contains(e.getId()); break;
+                default: ok = e.isPast();
             }
+            if (ok && !query.isEmpty()) {
+                ok = has(e.getTitle()) || has(e.getVenue()) || has(e.getCategory());
+            }
+            if (ok) shown.add(e);
         }
         if (filter.equals("Past")) Collections.reverse(shown); // newest first
 
@@ -156,17 +176,21 @@ public class EventsActivity extends AppCompatActivity implements EventAdapter.Li
         binding.tvCount.setText(shown.size() + (shown.size() == 1 ? " event" : " events"));
 
         if (shown.isEmpty()) {
-            switch (filter) {
-                case "Upcoming":
-                    showEmpty("No upcoming events", "New events from the administration will appear here.");
-                    break;
-                case "My events":
-                    showEmpty("You haven't registered yet", "Open an event and tap Register now.");
-                    break;
-                default:
-                    showEmpty("No past events", "Finished events will be listed here.");
+            if (!query.isEmpty()) {
+                showEmpty("No results", "Nothing matches \"" + query + "\".");
+            } else {
+                switch (filter) {
+                    case "Upcoming":
+                        showEmpty("No upcoming events", "New events from the administration will appear here.");
+                        break;
+                    case "My events":
+                        showEmpty("You haven't registered yet", "Open an event and tap Register now.");
+                        break;
+                    default:
+                        showEmpty("No past events", "Finished events will be listed here.");
+                }
             }
-        } else {
+        }else {
             binding.emptyState.setVisibility(View.GONE);
             binding.rvEvents.setVisibility(View.VISIBLE);
         }
@@ -213,5 +237,8 @@ public class EventsActivity extends AppCompatActivity implements EventAdapter.Li
 
     private int dp(int v) {
         return (int) (v * getResources().getDisplayMetrics().density);
+    }
+    private boolean has(String s) {
+        return s != null && s.toLowerCase(Locale.ROOT).contains(query);
     }
 }

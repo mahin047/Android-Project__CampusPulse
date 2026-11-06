@@ -159,7 +159,7 @@ public class AdminDashboardActivity extends AppCompatActivity implements Inciden
         items.add(new ModuleItem("Incident queue", "Handle reports",
                 R.drawable.ic_report, R.drawable.bg_tile_orange, ""));
 
-        binding.rvActions.setLayoutManager(new GridLayoutManager(this, 2));
+        binding.rvActions.setLayoutManager(new GridLayoutManager(this, getResources().getInteger(R.integer.grid_columns)));
         binding.rvActions.setNestedScrollingEnabled(false);
         binding.rvActions.setAdapter(new ModuleAdapter(items, item -> {
             switch (item.getTitle()) {

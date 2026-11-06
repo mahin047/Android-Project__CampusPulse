@@ -23,8 +23,8 @@
 
             <ImageView
                 android:id="@+id/btnBack"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Back"
                 android:padding="10dp"
@@ -48,6 +48,29 @@
                 android:textColor="#9DB2D1"
                 android:textSize="13sp" />
         </LinearLayout>
+        <EditText
+            android:id="@+id/etSearch"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="10dp"
+            android:autofillHints="none"
+            android:background="@drawable/bg_notice_item"
+            android:drawableStart="@drawable/ic_search"
+            android:drawablePadding="10dp"
+            android:drawableTint="#9DB2D1"
+            android:fontFamily="@font/poppins_regular"
+            android:hint="Search"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
+            android:maxLines="1"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#8FA3C4"
+            android:textSize="14sp" />
 
         <HorizontalScrollView
             android:layout_width="match_parent"
@@ -115,13 +138,10 @@
                     android:textSize="13sp" />
             </LinearLayout>
 
-            <com.google.android.material.progressindicator.CircularProgressIndicator
+            <com.campuspulse.app.SkeletonView
                 android:id="@+id/loading"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:indeterminate="true"
-                app:indicatorColor="#2DD4BF" />
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
         </FrameLayout>
     </LinearLayout>
 

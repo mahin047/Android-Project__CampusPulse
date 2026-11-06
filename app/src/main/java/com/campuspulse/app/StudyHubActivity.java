@@ -77,6 +77,8 @@ public class StudyHubActivity extends AppCompatActivity implements ResourceAdapt
             chip.setTextSize(13);
             chip.setTypeface(ResourcesCompat.getFont(this, R.font.poppins_bold));
             chip.setPadding(dp(16), dp(8), dp(16), dp(8));
+            chip.setMinimumHeight(dp(48));
+            chip.setGravity(android.view.Gravity.CENTER);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             lp.setMarginEnd(dp(8));

@@ -40,6 +40,7 @@ public class ModuleAdapter extends RecyclerView.Adapter<ModuleAdapter.ModuleView
 
         b.ivIcon.setImageResource(item.getIconRes());
         b.tvTitle.setText(item.getTitle());
+        b.getRoot().setContentDescription(item.getTitle() + ", " + item.getSubtitle());
         b.tvSubtitle.setText(item.getSubtitle());
         b.getRoot().setBackgroundResource(item.getBgRes());
         b.getRoot().setOnClickListener(v -> listener.onModuleClick(item));
