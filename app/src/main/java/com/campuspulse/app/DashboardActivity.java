@@ -43,6 +43,7 @@ import java.util.Calendar;
 import java.util.List;
 import androidx.appcompat.app.AlertDialog;
 import com.campuspulse.app.databinding.DialogFeedbackBinding;
+import android.view.View;
 
 public class DashboardActivity extends AppCompatActivity {
 
@@ -52,6 +53,14 @@ public class DashboardActivity extends AppCompatActivity {
     private ListenerRegistration noticeReg;
 
     private ConnectivityBanner banner;
+
+    private final ActivityResultLauncher<Intent> profileLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), res -> {
+                if (res.getResultCode() != RESULT_OK || res.getData() == null) return;
+                String a = res.getData().getStringExtra(ProfileActivity.EXTRA_ACTION);
+                if (ProfileActivity.ACTION_NOTIFICATIONS.equals(a)) onNotificationsMenu();
+                else if (ProfileActivity.ACTION_FEEDBACK.equals(a)) showFeedbackDialog();
+            });
     private boolean noticeReceiverOn = false;
 
     // dynamic receiver: app সামনে থাকলে নতুন notice এ Snackbar
@@ -82,13 +91,14 @@ public class DashboardActivity extends AppCompatActivity {
         banner = new ConnectivityBanner(this, binding.tvOffline);
 
         binding.tvGreeting.setText(greetingForNow());
-        loadUserName();
+
         setupModules();
 
         binding.noticeCard.setOnClickListener(v -> openNotices());
         binding.sosBanner.setOnClickListener(v ->
                 startActivity(new Intent(this, SosActivity.class)));
-        binding.tvAvatar.setOnClickListener(v -> showProfileMenu());
+        binding.avatarBox.setOnClickListener(v ->
+                profileLauncher.launch(new Intent(this, ProfileActivity.class)));
         binding.assistantCard.setOnClickListener(v ->
                 startActivity(new Intent(this, AssistantActivity.class)));
         binding.tvWeather.setOnClickListener(v ->
@@ -111,11 +121,29 @@ public class DashboardActivity extends AppCompatActivity {
         if (u == null) return;
         FirebaseFirestore.getInstance().collection("users").document(u.getUid()).get()
                 .addOnSuccessListener(doc -> {
+                    if (isDestroyed()) return;
                     String full = doc.getString("name");
-                    if (full == null || full.trim().isEmpty()) return;
-                    String first = full.trim().split("\\s+")[0];
-                    binding.tvName.setText(first);
-                    binding.tvAvatar.setText(first.substring(0, 1).toUpperCase());
+                    if (full != null && !full.trim().isEmpty()) {
+                        String first = full.trim().split("\\s+")[0];
+                        binding.tvName.setText(first);
+                        binding.tvAvatar.setText(first.substring(0, 1).toUpperCase());
+                    }
+                    String b64 = doc.getString("photoB64");
+                    if (b64 != null && !b64.isEmpty()) {
+                        ImageUtil.decodeAsync(b64, bmp -> {
+                            if (isDestroyed() || bmp == null) return;
+                            binding.ivAvatar.setImageBitmap(bmp);
+                            binding.ivAvatar.setVisibility(View.VISIBLE);
+                        });
+                    } else {
+                        binding.ivAvatar.setVisibility(View.GONE);
+                    }
+                    // পুরোনো account এ department থাকলে Study Hub এর default হিসেবে বসাও
+                    String dept = doc.getString("department");
+                    android.content.SharedPreferences sp = getSharedPreferences("app_prefs", MODE_PRIVATE);
+                    if (dept != null && sp.getString("my_dept", null) == null) {
+                        sp.edit().putString("my_dept", dept).apply();
+                    }
                 });
     }
 
@@ -226,6 +254,7 @@ public class DashboardActivity extends AppCompatActivity {
         super.onStart();
         Log.d(TAG, "Dashboard onStart");
         listenLatestNotice();
+        loadUserName();
         loadWeather();
 
         banner.start();

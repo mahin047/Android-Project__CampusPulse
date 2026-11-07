@@ -1,30 +1,81 @@
 {
+  "departments": [
+    {"code": "CSE",  "name": "Computer Science & Engineering"},
+    {"code": "EEE",  "name": "Electrical & Electronic Engineering"},
+    {"code": "ME",   "name": "Mechanical Engineering"},
+    {"code": "CE",   "name": "Civil Engineering"},
+    {"code": "ECE",  "name": "Electronics & Communication Engineering"},
+    {"code": "IPE",  "name": "Industrial Engineering & Management"},
+    {"code": "ESE",  "name": "Energy Science & Engineering"},
+    {"code": "BME",  "name": "Biomedical Engineering"},
+    {"code": "URP",  "name": "Urban & Regional Planning"},
+    {"code": "BECM", "name": "Building Engineering & Construction Management"},
+    {"code": "MSE",  "name": "Materials Science & Engineering"},
+    {"code": "CHE",  "name": "Chemical Engineering"},
+    {"code": "LE",   "name": "Leather Engineering"},
+    {"code": "TE",   "name": "Textile Engineering"},
+    {"code": "MATH", "name": "Mathematics"},
+    {"code": "PHY",  "name": "Physics"}
+  ],
+
+
+
   "courses": [
     {
       "code": "CSE 2105", "title": "Algorithms", "dept": "CSE",
       "resources": [
-        {"type": "Lecture Notes", "title": "What is an algorithm?", "url": "https://en.wikipedia.org/wiki/Algorithm"},
-        {"type": "Previous Questions", "title": "Algorithms: previous year questions", "url": "https://www.google.com/search?q=algorithms+previous+year+questions+pdf"},
-        {"type": "Lab Materials", "title": "Sorting algorithms lab sheet", "url": "https://en.wikipedia.org/wiki/Sorting_algorithm"},
-        {"type": "Important Topics", "title": "Dynamic programming", "url": "https://en.wikipedia.org/wiki/Dynamic_programming"}
+        {"type": "Lecture Notes", "title": "Introduction to Algorithms", "url": "https://docs.google.com/presentation/d/1FYvxLavfGT9dVgUC5LSx7mzvXtf6bXpG/edit?usp=sharing&ouid=100954434283561560238&rtpof=true&sd=true"},
+        {"type": "Lecture Notes", "title": "Sorting algorithms", "url": "https://www.geeksforgeeks.org/dsa/sorting-algorithms/"},
+        {"type": "Important Topics", "title": "Dynamic programming", "url": "https://www.geeksforgeeks.org/dsa/dynamic-programming/"},
+        {"type": "Important Topics", "title": "Graph algorithms (BFS, DFS)", "url": "https://www.geeksforgeeks.org/dsa/breadth-first-search-or-bfs-for-a-graph/"},
+        {"type": "Lab Materials", "title": "Searching and sorting practice", "url": "https://www.w3resource.com/cpp-exercises/sorting-and-searching/index.php"},
+        {"type": "Previous Questions", "title": "Algorithms: previous year questions", "url": "https://drive.google.com/file/d/1hdrV20WpTuiL48bRE7GZ5DSRFNt-lT9W/view?usp=sharing"}
       ]
     },
     {
       "code": "CSE 2201", "title": "Database Systems", "dept": "CSE",
       "resources": [
-        {"type": "Lecture Notes", "title": "Relational model basics", "url": "https://en.wikipedia.org/wiki/Relational_database"},
-        {"type": "Previous Questions", "title": "Database: previous year questions", "url": "https://www.google.com/search?q=database+systems+previous+year+questions+pdf"},
-        {"type": "Lab Materials", "title": "SQL practice queries", "url": "https://en.wikipedia.org/wiki/SQL"},
-        {"type": "Important Topics", "title": "Normalization and ACID", "url": "https://en.wikipedia.org/wiki/Database_normalization"}
+        {"type": "Lecture Notes", "title": "Introduction to DBMS", "url": "https://www.geeksforgeeks.org/search/?q=introduction%20to%20dbms"},
+        {"type": "Lecture Notes", "title": "ER model", "url": "https://www.geeksforgeeks.org/search/?q=er%20model"},
+        {"type": "Important Topics", "title": "Normalization", "url": "https://www.geeksforgeeks.org/search/?q=normalization%20in%20dbms"},
+        {"type": "Important Topics", "title": "ACID properties and transactions", "url": "https://www.geeksforgeeks.org/search/?q=acid%20properties"},
+        {"type": "Lab Materials", "title": "SQL queries practice", "url": "https://www.geeksforgeeks.org/search/?q=sql%20tutorial"},
+        {"type": "Previous Questions", "title": "Database: previous year questions", "url": "https://www.google.com/search?q=database+systems+previous+year+questions+pdf"}
       ]
     },
     {
       "code": "CSE 2103", "title": "Object Oriented Programming", "dept": "CSE",
       "resources": [
-        {"type": "Lecture Notes", "title": "Object-oriented programming", "url": "https://en.wikipedia.org/wiki/Object-oriented_programming"},
-        {"type": "Previous Questions", "title": "OOP: previous year questions", "url": "https://www.google.com/search?q=object+oriented+programming+java+previous+year+questions+pdf"},
-        {"type": "Lab Materials", "title": "Java lab: classes and objects", "url": "https://en.wikipedia.org/wiki/Java_(programming_language)"},
-        {"type": "Important Topics", "title": "Polymorphism and design patterns", "url": "https://en.wikipedia.org/wiki/Software_design_pattern"}
+        {"type": "Lecture Notes", "title": "OOP concepts in Java", "url": "https://www.geeksforgeeks.org/search/?q=oops%20concepts%20in%20java"},
+        {"type": "Lecture Notes", "title": "Inheritance and polymorphism", "url": "https://www.geeksforgeeks.org/search/?q=inheritance%20in%20java"},
+        {"type": "Important Topics", "title": "Abstraction and interfaces", "url": "https://www.geeksforgeeks.org/search/?q=abstract%20class%20and%20interface%20in%20java"},
+        {"type": "Lab Materials", "title": "Java programs practice", "url": "https://www.geeksforgeeks.org/search/?q=java%20programs"},
+        {"type": "Previous Questions", "title": "OOP: previous year questions", "url": "https://www.google.com/search?q=object+oriented+programming+java+previous+year+questions+pdf"}
+      ]
+    },
+    {
+      "code": "CSE 2101", "title": "Data Structures", "dept": "CSE",
+      "resources": [
+        {"type": "Lecture Notes", "title": "Arrays and linked lists", "url": "https://www.geeksforgeeks.org/search/?q=linked%20list"},
+        {"type": "Lecture Notes", "title": "Stack and queue", "url": "https://www.geeksforgeeks.org/search/?q=stack%20and%20queue"},
+        {"type": "Important Topics", "title": "Trees and BST", "url": "https://www.geeksforgeeks.org/search/?q=binary%20search%20tree"},
+        {"type": "Important Topics", "title": "Hashing", "url": "https://www.geeksforgeeks.org/search/?q=hashing"},
+        {"type": "Lab Materials", "title": "Data structure programs", "url": "https://www.geeksforgeeks.org/search/?q=data%20structure%20programs"}
+      ]
+    },
+    {
+      "code": "CSE 2203", "title": "Operating Systems", "dept": "CSE",
+      "resources": [
+        {"type": "Lecture Notes", "title": "Process and threads", "url": "https://www.geeksforgeeks.org/search/?q=process%20and%20thread"},
+        {"type": "Important Topics", "title": "CPU scheduling", "url": "https://www.geeksforgeeks.org/search/?q=cpu%20scheduling"},
+        {"type": "Important Topics", "title": "Deadlock", "url": "https://www.geeksforgeeks.org/search/?q=deadlock%20in%20os"},
+        {"type": "Important Topics", "title": "Memory management and paging", "url": "https://www.geeksforgeeks.org/search/?q=paging%20in%20os"}
+      ]
+    },
+    {
+      "code": "EEE 2101", "title": "Electrical Circuits", "dept": "EEE",
+      "resources": [
+        {"type": "Lecture Notes", "title": "Electrical network basics", "url": "https://en.wikipedia.org/wiki/Electrical_network"}
       ]
     }
   ]

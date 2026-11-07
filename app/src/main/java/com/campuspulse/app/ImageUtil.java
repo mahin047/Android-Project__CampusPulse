@@ -11,6 +11,10 @@ import android.util.Base64;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import android.os.Handler;
+import android.os.Looper;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ImageUtil {
 
@@ -81,5 +85,73 @@ public class ImageUtil {
     public static Bitmap fromBase64(String b64) {
         byte[] bytes = Base64.decode(b64, Base64.DEFAULT);
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+    }
+
+    private static final int AVATAR_SIDE = 256;
+    private static final int AVATAR_MAX_BYTES = 60 * 1024;
+    private static final ExecutorService DECODER = Executors.newSingleThreadExecutor();
+    private static final Handler MAIN = new Handler(Looper.getMainLooper());
+
+    /** Center-crop square, 256x256, JPEG. Background thread এ ডাকো। */
+    public static byte[] compressAvatar(ContentResolver cr, Uri uri) throws IOException {
+        BitmapFactory.Options bounds = new BitmapFactory.Options();
+        bounds.inJustDecodeBounds = true;
+        try (InputStream in = cr.openInputStream(uri)) {
+            if (in == null) throw new IOException("Cannot open image");
+            BitmapFactory.decodeStream(in, null, bounds);
+        }
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) throw new IOException("Not an image");
+
+        int sample = 1;
+        while (Math.min(bounds.outWidth, bounds.outHeight) / (sample * 2) >= AVATAR_SIDE * 2) sample *= 2;
+
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inSampleSize = sample;
+        Bitmap bmp;
+        try (InputStream in = cr.openInputStream(uri)) {
+            if (in == null) throw new IOException("Cannot open image");
+            bmp = BitmapFactory.decodeStream(in, null, opts);
+        }
+        if (bmp == null) throw new IOException("Could not decode image");
+
+        int rotation = 0;
+        try (InputStream in = cr.openInputStream(uri)) {
+            if (in != null) {
+                int o = new ExifInterface(in).getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                        ExifInterface.ORIENTATION_NORMAL);
+                if (o == ExifInterface.ORIENTATION_ROTATE_90) rotation = 90;
+                else if (o == ExifInterface.ORIENTATION_ROTATE_180) rotation = 180;
+                else if (o == ExifInterface.ORIENTATION_ROTATE_270) rotation = 270;
+            }
+        } catch (IOException ignored) { }
+
+        int side = Math.min(bmp.getWidth(), bmp.getHeight());
+        int x = (bmp.getWidth() - side) / 2, y = (bmp.getHeight() - side) / 2;
+        Matrix m = new Matrix();
+        float scale = (float) AVATAR_SIDE / side;
+        m.postScale(scale, scale);
+        m.postRotate(rotation);
+        Bitmap out = Bitmap.createBitmap(bmp, x, y, side, side, m, true);
+        if (out != bmp) bmp.recycle();
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        int quality = 85;
+        do {
+            bos.reset();
+            out.compress(Bitmap.CompressFormat.JPEG, quality, bos);
+            quality -= 10;
+        } while (bos.size() > AVATAR_MAX_BYTES && quality >= 35);
+        out.recycle();
+        return bos.toByteArray();
+    }
+
+    /** base64 → Bitmap background এ, callback main thread এ আসে (ব্যর্থ হলে null)। */
+    public static void decodeAsync(String b64, CacheRepository.Callback<Bitmap> cb) {
+        DECODER.execute(() -> {
+            Bitmap bmp = null;
+            try { bmp = fromBase64(b64); } catch (RuntimeException ignored) { }
+            final Bitmap r = bmp;
+            MAIN.post(() -> cb.onResult(r));
+        });
     }
 }

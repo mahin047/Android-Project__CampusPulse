@@ -70,6 +70,24 @@
             android:textColor="#FFFFFF"
             android:textColorHint="#7C8FB0"
             android:textSize="14sp" />
+        <HorizontalScrollView
+            android:id="@+id/deptScroll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipToPadding="false"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="8dp"
+            android:scrollbars="none"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/deptRow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
 
         <HorizontalScrollView
             android:layout_width="match_parent"
@@ -114,7 +132,9 @@
                     android:layout_width="64dp"
                     android:layout_height="64dp"
                     android:importantForAccessibility="no"
-                    android:tint="#4A5F85" />
+                    app:tint="#4A5F85" />
+
+
 
                 <TextView
                     android:id="@+id/tvEmptyTitle"

@@ -7,30 +7,61 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StudyResource {
-    public String courseCode, courseTitle, type, title, url;
 
-    /** Nested JSON (courses → resources) কে flat Java list এ বদলায়। */
-    public static List<StudyResource> parse(String json) throws JSONException {
-        List<StudyResource> out = new ArrayList<>();
-        JSONArray courses = new JSONObject(json).getJSONArray("courses");
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class StudyResource {
+    public String courseCode, courseTitle, dept, type, title, url;
+
+    public static class Dept {
+        public String code, name;
+    }
+
+    public static class Data {
+        public final List<Dept> departments = new ArrayList<>();
+        public final List<StudyResource> resources = new ArrayList<>();
+    }
+
+    public static Data parse(String json) throws JSONException {
+        Data data = new Data();
+        JSONObject root = new JSONObject(json);
+
+        JSONArray deps = root.optJSONArray("departments");
+        if (deps != null) {
+            for (int i = 0; i < deps.length(); i++) {
+                JSONObject d = deps.getJSONObject(i);
+                Dept x = new Dept();
+                x.code = d.getString("code");
+                x.name = d.optString("name", x.code);
+                data.departments.add(x);
+            }
+        }
+
+        JSONArray courses = root.getJSONArray("courses");
         for (int i = 0; i < courses.length(); i++) {
             JSONObject c = courses.getJSONObject(i);
             String code = c.getString("code");
             String title = c.getString("title");
+            String dept = c.optString("dept", "");
             JSONArray res = c.getJSONArray("resources");
             for (int j = 0; j < res.length(); j++) {
                 JSONObject r = res.getJSONObject(j);
                 StudyResource s = new StudyResource();
                 s.courseCode = code;
                 s.courseTitle = title;
+                s.dept = dept;
                 s.type = r.getString("type");
                 s.title = r.getString("title");
                 s.url = r.optString("url", "");
-                out.add(s);
+                data.resources.add(s);
             }
         }
-        return out;
+        return data;
     }
 
     public static int typeColor(String t) {

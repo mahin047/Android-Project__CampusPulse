@@ -131,17 +131,35 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/tvAvatar"
+                <FrameLayout
+                    android:id="@+id/avatarBox"
                     android:layout_width="56dp"
                     android:layout_height="56dp"
-                    android:background="@drawable/bg_avatar"
-                    android:contentDescription="Profile menu"
-                    android:fontFamily="@font/poppins_bold"
-                    android:gravity="center"
-                    android:text="U"
-                    android:textColor="#FFFFFF"
-                    android:textSize="26sp" />
+                    android:clickable="true"
+                    android:contentDescription="My profile"
+                    android:focusable="true">
+
+                    <TextView
+                        android:id="@+id/tvAvatar"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_avatar"
+                        android:fontFamily="@font/poppins_bold"
+                        android:gravity="center"
+                        android:text="U"
+                        android:textColor="#FFFFFF"
+                        android:textSize="26sp" />
+
+                    <ImageView
+                        android:id="@+id/ivAvatar"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_avatar"
+                        android:clipToOutline="true"
+                        android:importantForAccessibility="no"
+                        android:scaleType="centerCrop"
+                        android:visibility="gone" />
+                </FrameLayout>
             </LinearLayout>
 
             <!-- Notice card -->

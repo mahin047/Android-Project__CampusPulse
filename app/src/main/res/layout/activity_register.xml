@@ -30,6 +30,44 @@
             android:text="Join your campus community"
             android:textColor="@color/text_muted"
             android:textSize="14sp" />
+        <FrameLayout
+            android:layout_width="104dp"
+            android:layout_height="104dp"
+            android:layout_marginTop="20dp">
+
+            <ImageView
+                android:id="@+id/ivAvatar"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_avatar"
+                android:clickable="true"
+                android:clipToOutline="true"
+                android:contentDescription="Add profile photo"
+                android:focusable="true"
+                android:padding="30dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_photo" />
+
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/avatarLoading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:indeterminate="true"
+                android:visibility="gone"
+                app:indicatorColor="#FFFFFF" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/tvPhotoHint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:fontFamily="@font/poppins_regular"
+            android:text="Tap to add your profile photo (required)"
+            android:textColor="#9FE3D6"
+            android:textSize="13sp" />
 
         <LinearLayout
             android:id="@+id/card"
@@ -78,6 +116,40 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="text"
+                    android:textColor="@color/text_main" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilDept"
+                style="@style/Widget.CampusPulse.Input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="Department"
+                app:endIconMode="dropdown_menu">
+
+                <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                    android:id="@+id/actDept"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none"
+                    android:textColor="@color/text_main" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilPhone"
+                style="@style/Widget.CampusPulse.Input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="Phone (01XXXXXXXXX)">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etPhone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="phone"
+                    android:maxLength="14"
                     android:textColor="@color/text_main" />
             </com.google.android.material.textfield.TextInputLayout>
 

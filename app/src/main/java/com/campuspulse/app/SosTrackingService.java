@@ -23,6 +23,12 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.ServiceCompat;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -64,6 +70,18 @@ public class SosTrackingService extends Service implements LocationListener {
     private int sent = 0;
     private boolean ending = false;
     private UpdateListener updateListener;
+    private FusedLocationProviderClient fused;
+
+    private final LocationCallback fusedCallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(@NonNull LocationResult result) {
+            Location l = result.getLastLocation();
+            if (l != null) {
+                lastLocation = l;
+                push(l);
+            }
+        }
+    };
 
     // ---------- lifecycle ----------
     @Override
@@ -101,6 +119,7 @@ public class SosTrackingService extends Service implements LocationListener {
         handler.removeCallbacksAndMessages(null);
         try { lm.removeUpdates(this); } catch (RuntimeException ignored) { }
         if (alertRef != null && statusListener != null) alertRef.removeEventListener(statusListener);
+        if (fused != null) fused.removeLocationUpdates(fusedCallback);
     }
 
     // ---------- tracking ----------
@@ -141,18 +160,16 @@ public class SosTrackingService extends Service implements LocationListener {
         alertRef.addValueEventListener(statusListener);
     }
 
-    @SuppressLint("MissingPermission") // permission Activity তে আগেই check করা হয়
+
+    @SuppressLint("MissingPermission") // Activity তে আগেই check করা হয়
     private void startLocationUpdates() {
-        for (String provider : new String[]{LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER}) {
-            try {
-                if (!lm.isProviderEnabled(provider)) continue;
-                lm.requestLocationUpdates(provider, 5000L, 0f, this, Looper.getMainLooper());
-                Location last = lm.getLastKnownLocation(provider);
-                if (last != null) onLocationChanged(last);
-            } catch (SecurityException | IllegalArgumentException ignored) {
-                // coarse permission থাকলে GPS provider নেওয়া যায় না, network provider কাজ করবে
-            }
-        }
+        fused = LocationServices.getFusedLocationProviderClient(this);
+        try {
+            LocationRequest req = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 3000L)
+                    .setMinUpdateIntervalMillis(2000L)
+                    .build();
+            fused.requestLocationUpdates(req, fusedCallback, Looper.getMainLooper());
+        } catch (SecurityException ignored) { }
     }
 
     @Override
