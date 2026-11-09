@@ -65,6 +65,15 @@ public class ProfileActivity extends AppCompatActivity {
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(i);
         });
+        View glow = ((android.view.ViewGroup) b.ivAvatar.getParent()).getChildAt(0);
+        android.animation.ObjectAnimator pulse = android.animation.ObjectAnimator.ofPropertyValuesHolder(glow,
+                android.animation.PropertyValuesHolder.ofFloat("scaleX", 1f, 1.08f),
+                android.animation.PropertyValuesHolder.ofFloat("scaleY", 1f, 1.08f),
+                android.animation.PropertyValuesHolder.ofFloat("alpha", 1f, 0.5f));
+        pulse.setDuration(1400);
+        pulse.setRepeatMode(android.animation.ValueAnimator.REVERSE);
+        pulse.setRepeatCount(android.animation.ValueAnimator.INFINITE);
+        pulse.start();
 
         load();
     }

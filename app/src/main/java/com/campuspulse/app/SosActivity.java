@@ -16,6 +16,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -61,6 +62,9 @@ public class SosActivity extends AppCompatActivity implements SosButtonView.OnSo
     private DatabaseReference alertRef;
     private ValueEventListener alertListener;
 
+    private boolean delivered = false;        // server confirm korechhe
+    private SosAlertModel lastModel = null;
+
     private SosTrackingService service;
     private boolean bound = false, receiverOn = false;
 
@@ -88,7 +92,7 @@ public class SosActivity extends AppCompatActivity implements SosButtonView.OnSo
         }
     };
 
-    // Service → Activity: SOS শেষ হলে broadcast আসে
+    // Service → Activity: SOS shesh hole broadcast ashe
     private final BroadcastReceiver endedReceiver = new BroadcastReceiver() {
         @Override public void onReceive(Context c, Intent i) { unbindFromService(); }
     };
@@ -129,8 +133,9 @@ public class SosActivity extends AppCompatActivity implements SosButtonView.OnSo
 
         currentId = SosPrefs.get(this, uid);
         if (currentId != null) {
+            delivered = true; // app abar khulle alert age-i server-e geche
             attachWatcher(currentId);
-            if (hasLocationPermission()) startTracking(); // idempotent: চলমান থাকলে শুধু bind হয়
+            if (hasLocationPermission()) startTracking(); // idempotent
         } else {
             showIdle();
         }
@@ -176,20 +181,30 @@ public class SosActivity extends AppCompatActivity implements SosButtonView.OnSo
         m.put("createdAt", ServerValue.TIMESTAMP);
 
         currentId = id;
+        delivered = false;
+        lastModel = null;
         SosPrefs.set(this, uid, id);
+        attachWatcher(id);
 
-        ref.setValue(m).addOnFailureListener(e -> {
-            if (id.equals(currentId)) {
-                currentId = null;
-                SosPrefs.clear(this);
-                detachWatcher();
-                showIdle();
-                Toast.makeText(this, "Could not send the SOS. Call 999 now!", Toast.LENGTH_LONG).show();
-            }
-        });
+        ref.setValue(m)
+                .addOnSuccessListener(v -> {
+                    if (!id.equals(currentId)) return;
+                    delivered = true;
+                    if (lastModel != null) renderSteps(lastModel);
+                })
+                .addOnFailureListener(e -> {
+                    if (!id.equals(currentId)) return;
+                    Log.e("SOS", "send failed: " + e.getMessage());
+                    currentId = null;
+                    delivered = false;
+                    SosPrefs.clear(this);
+                    detachWatcher();
+                    showIdle();
+                    Toast.makeText(this, "SOS not sent: " + e.getMessage()
+                            + "\nCall 999 now!", Toast.LENGTH_LONG).show();
+                });
 
-        attachWatcher(id);              // local write সাথে সাথে UI বদলে দেয়
-        startTrackingWithPermission();  // alert যাওয়ার পরে permission চাওয়া হয়
+        startTrackingWithPermission();
     }
 
     // ---------- permissions + service ----------
@@ -221,7 +236,7 @@ public class SosActivity extends AppCompatActivity implements SosButtonView.OnSo
         Intent i = new Intent(this, SosTrackingService.class)
                 .setAction(SosTrackingService.ACTION_START)
                 .putExtra(SosTrackingService.EXTRA_ALERT_ID, currentId);
-        ContextCompat.startForegroundService(this, i); // started + foreground
+        ContextCompat.startForegroundService(this, i);
 
         if (!bound) {
             bound = bindService(new Intent(this, SosTrackingService.class), conn, Context.BIND_AUTO_CREATE);
@@ -242,13 +257,21 @@ public class SosActivity extends AppCompatActivity implements SosButtonView.OnSo
         alertRef = FirebaseDatabase.getInstance().getReference("sos_alerts").child(id);
         alertListener = new ValueEventListener() {
             @Override public void onDataChange(@NonNull DataSnapshot s) {
-                if (!s.exists()) { finishAlert(null); return; }
+                if (!s.exists()) {
+                    if (delivered) finishAlert(null); // server theke muchhe geche
+                    return;                           // na hole write-er result-er opekkha
+                }
                 SosAlertModel m = SosAlertModel.from(s);
                 if (!m.isActive()) { finishAlert(m); return; }
+                lastModel = m;
                 renderActive(m);
             }
 
-            @Override public void onCancelled(@NonNull DatabaseError e) { finishAlert(null); }
+            @Override public void onCancelled(@NonNull DatabaseError e) {
+                Log.e("SOS", "watch denied: " + e.getMessage());
+                // idle-e fere na giye shudhu jonai
+                b.tvLive.setText("Can't read alert status right now. The alert may still be active.");
+            }
         };
         alertRef.addValueEventListener(alertListener);
     }
@@ -263,6 +286,8 @@ public class SosActivity extends AppCompatActivity implements SosButtonView.OnSo
         detachWatcher();
         SosPrefs.clear(this);
         currentId = null;
+        delivered = false;
+        lastModel = null;
         unbindFromService();
         stopService(new Intent(this, SosTrackingService.class));
         if (m != null && SosAlertModel.RESOLVED.equals(m.getStatus())) {
@@ -304,6 +329,20 @@ public class SosActivity extends AppCompatActivity implements SosButtonView.OnSo
                     ? "Starting live location…"
                     : "Location is not being shared (permission denied).");
         }
+        renderSteps(m);
+    }
+
+    private void renderSteps(SosAlertModel m) {
+        boolean ack = SosAlertModel.ACK.equals(m.getStatus());
+        setStep(b.step1, "Alert created on your phone", true, false);
+        setStep(b.step2, "Delivered to campus security", delivered, !delivered);
+        setStep(b.step3, "Security is responding", ack, delivered && !ack);
+        setStep(b.step4, "Resolved", false, ack);
+    }
+
+    private void setStep(TextView tv, String label, boolean done, boolean active) {
+        tv.setText((done ? "✓  " : active ? "⏳  " : "○  ") + label);
+        tv.setTextColor(Color.parseColor(done ? "#34D399" : active ? "#F5B942" : "#7C8FB0"));
     }
 
     private void showLive(Location loc, int count) {
@@ -364,7 +403,7 @@ public class SosActivity extends AppCompatActivity implements SosButtonView.OnSo
     }
 
     private void callEmergency() {
-        // ACTION_DIAL: dialer খোলে, CALL_PHONE permission লাগে না
+        // ACTION_DIAL: dialer kholey, CALL_PHONE permission lage na
         startActivity(new Intent(Intent.ACTION_DIAL, Uri.parse("tel:999")));
     }
 

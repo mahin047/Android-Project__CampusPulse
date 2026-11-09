@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_dashboard">
 
-    <!-- পরে ইউনিভার্সিটির ছবি: android:src বসাও, visibility="visible" করো -->
+    <!-- pore university-r chhobi: android:src boshao, visibility="visible" koro -->
     <ImageView
         android:id="@+id/ivHeaderBg"
         android:layout_width="match_parent"
@@ -133,32 +133,60 @@
 
                 <FrameLayout
                     android:id="@+id/avatarBox"
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
                     android:clickable="true"
                     android:contentDescription="My profile"
                     android:focusable="true">
 
-                    <TextView
-                        android:id="@+id/tvAvatar"
+                    <View
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:background="@drawable/bg_avatar"
+                        android:background="@drawable/bg_avatar_glow" />
+
+                    <View
+                        android:layout_width="58dp"
+                        android:layout_height="58dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/bg_avatar_ring" />
+
+                    <View
+                        android:layout_width="53dp"
+                        android:layout_height="53dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/bg_avatar_inner" />
+
+                    <TextView
+                        android:id="@+id/tvAvatar"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/bg_avatar_inner"
+                        android:backgroundTint="#1E2A4A"
                         android:fontFamily="@font/poppins_bold"
                         android:gravity="center"
                         android:text="U"
                         android:textColor="#FFFFFF"
-                        android:textSize="26sp" />
+                        android:textSize="22sp" />
 
                     <ImageView
                         android:id="@+id/ivAvatar"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/bg_avatar"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/bg_avatar_inner"
                         android:clipToOutline="true"
                         android:importantForAccessibility="no"
                         android:scaleType="centerCrop"
                         android:visibility="gone" />
+
+                    <View
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_gravity="bottom|end"
+                        android:layout_marginEnd="3dp"
+                        android:layout_marginBottom="3dp"
+                        android:background="@drawable/bg_status_dot" />
                 </FrameLayout>
             </LinearLayout>
 
@@ -257,13 +285,13 @@
 
             <!-- Campus Assistant -->
             <LinearLayout
-                android:contentDescription="Campus Assistant. Ask about places, events, notices and weather."
                 android:id="@+id/assistantCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
                 android:background="@drawable/bg_notice_item"
                 android:clickable="true"
+                android:contentDescription="Campus Assistant. Ask about places, events, notices and weather."
                 android:focusable="true"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
@@ -337,13 +365,15 @@
 
             <!-- SOS banner -->
             <LinearLayout
-                android:contentDescription="Campus SOS emergency. Double tap to open the alert screen."
                 android:id="@+id/sosBanner"
                 android:layout_width="match_parent"
                 android:layout_height="78dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="24dp"
                 android:background="@drawable/bg_sos_banner"
+                android:clickable="true"
+                android:contentDescription="Campus SOS emergency. Double tap to open the alert screen."
+                android:focusable="true"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:paddingStart="22dp"
@@ -370,6 +400,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/tvSosTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/poppins_bold"
@@ -378,6 +409,7 @@
                         android:textSize="15sp" />
 
                     <TextView
+                        android:id="@+id/tvSosSub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/poppins_regular"

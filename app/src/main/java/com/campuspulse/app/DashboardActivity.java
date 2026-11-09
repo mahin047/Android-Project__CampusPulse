@@ -156,7 +156,7 @@ public class DashboardActivity extends AppCompatActivity {
                 R.drawable.ic_event, R.drawable.bg_tile_green, "Events are built on Day 5."));
         items.add(new ModuleItem("Lost & Found", "Classic Key/Altes",
                 R.drawable.ic_lost_found, R.drawable.bg_tile_purple, "Lost & Found is built on Day 6."));
-        items.add(new ModuleItem("Reports", "TEST123",
+        items.add(new ModuleItem("Reports", "Reports & Feedback",
                 R.drawable.ic_report, R.drawable.bg_tile_orange, "Incident reports are built on Day 7."));
         items.add(new ModuleItem("Study", "Notes & Questions",
                 R.drawable.ic_study, R.drawable.bg_tile_teal, "Study Hub is built on Day 12."));
@@ -262,6 +262,13 @@ public class DashboardActivity extends AppCompatActivity {
                 new IntentFilter(NoticeAlerts.ACTION_NEW_NOTICE), ContextCompat.RECEIVER_NOT_EXPORTED);
         noticeReceiverOn = true;
         maybeAskNotifications();
+
+        boolean sosActive = SosPrefs.get(this, FirebaseAuth.getInstance().getUid()) != null;
+        binding.tvSosTitle.setText(sosActive ? "SOS IN PROGRESS" : "CAMPUS SOS — EMERGENCY");
+        binding.tvSosSub.setText(sosActive ? "Tap to see live progress" : "Tap for Immediate Assistance");
+        binding.sosBanner.setContentDescription(sosActive
+                ? "SOS in progress. Double tap to see live progress."
+                : "Campus SOS emergency. Double tap to open the alert screen.");
     }
     @Override protected void onResume()  { super.onResume();  Log.d(TAG, "Dashboard onResume"); }
     @Override protected void onPause()   { super.onPause();   Log.d(TAG, "Dashboard onPause"); }

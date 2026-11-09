@@ -155,6 +155,20 @@
                     android:paddingEnd="32dp"
                     android:textColor="#9DB2D1"
                     android:textSize="13sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnEmptyAction"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="16dp"
+                    android:fontFamily="@font/poppins_bold"
+                    android:paddingStart="28dp"
+                    android:paddingEnd="28dp"
+                    android:textAllCaps="false"
+                    android:textColor="#06201E"
+                    android:visibility="gone"
+                    app:backgroundTint="#F5B942"
+                    app:cornerRadius="26dp" />
             </LinearLayout>
 
             <com.google.android.material.progressindicator.CircularProgressIndicator
@@ -166,4 +180,17 @@
                 app:indicatorColor="#2DD4BF" />
         </FrameLayout>
     </LinearLayout>
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fabAdd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="20dp"
+        android:fontFamily="@font/poppins_bold"
+        android:text="Add"
+        android:textColor="#06201E"
+        android:visibility="gone"
+        app:backgroundTint="#F5B942"
+        app:icon="@drawable/ic_add"
+        app:iconTint="#06201E" />
 </FrameLayout>

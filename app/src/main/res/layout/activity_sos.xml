@@ -172,6 +172,28 @@
                         android:textSize="13sp" />
                 </LinearLayout>
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_notice_item"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins_bold"
+                        android:text="Progress"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp" />
+
+                    <TextView android:id="@+id/step1" style="@style/StepText" />
+                    <TextView android:id="@+id/step2" style="@style/StepText" />
+                    <TextView android:id="@+id/step3" style="@style/StepText" />
+                    <TextView android:id="@+id/step4" style="@style/StepText" />
+                </LinearLayout>
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

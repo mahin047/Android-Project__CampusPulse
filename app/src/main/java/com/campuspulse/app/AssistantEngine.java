@@ -128,6 +128,7 @@ public class AssistantEngine {
         for (CampusPlace p : list) {
             Set<String> kw = tokens(p.keywords.toLowerCase(Locale.ROOT));
             kw.add(p.id);
+            kw.addAll(tokens(p.name.toLowerCase(Locale.ROOT)));
             int score = 0;
             for (String w : t) if (kw.contains(w)) score++;
             if (score > bestScore) {

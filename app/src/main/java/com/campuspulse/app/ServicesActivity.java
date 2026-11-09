@@ -21,17 +21,18 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import com.campuspulse.app.databinding.ActivityDirectoryBinding;
 import com.campuspulse.app.databinding.SheetPlaceBinding;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
+import java.util.TreeSet;
 
 public class ServicesActivity extends AppCompatActivity implements PlaceAdapter.Listener {
 
     private ActivityDirectoryBinding b;
     private PlaceAdapter adapter;
+    private ListenerRegistration reg;
     private final List<CampusPlace> all = new ArrayList<>();
     private final List<TextView> chips = new ArrayList<>();
     private String filter = "All";
@@ -49,7 +50,8 @@ public class ServicesActivity extends AppCompatActivity implements PlaceAdapter.
         b.btnBack.setOnClickListener(v -> finish());
 
         adapter = new PlaceAdapter(this);
-        b.rvItems.setLayoutManager(new GridLayoutManager(this, getResources().getInteger(R.integer.grid_columns)));
+        b.rvItems.setLayoutManager(new GridLayoutManager(this,
+                getResources().getInteger(R.integer.grid_columns)));
         b.rvItems.setAdapter(adapter);
 
         b.etSearch.addTextChangedListener(new TextWatcher() {
@@ -60,24 +62,41 @@ public class ServicesActivity extends AppCompatActivity implements PlaceAdapter.
                 applyFilter();
             }
         });
+    }
 
-        // XML parsing background এ, তাই spinner
-        b.loading.setVisibility(View.VISIBLE);
-        PlaceRepository.get(this).load(list -> {
+    // ---------- live listener (lifecycle-aware) ----------
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (all.isEmpty()) b.loading.setVisibility(View.VISIBLE);
+        reg = PlaceRepository.get(this).listen(list -> {
             if (isDestroyed()) return;
             b.loading.setVisibility(View.GONE);
+            all.clear();
             all.addAll(list);
-            buildChips();
+            rebuildChips();
             applyFilter();
         });
     }
 
-    // ---------- chips: category গুলো XML data থেকেই আসে ----------
-    private void buildChips() {
-        Set<String> cats = new LinkedHashSet<>();
-        cats.add("All");
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (reg != null) { reg.remove(); reg = null; }
+    }
+
+    // ---------- chips: category গুলো data থেকেই আসে ----------
+    private void rebuildChips() {
+        TreeSet<String> cats = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         for (CampusPlace p : all) cats.add(p.category);
-        for (String name : cats) {
+        if (!filter.equals("All") && !cats.contains(filter)) filter = "All";
+
+        b.chipRow.removeAllViews();
+        chips.clear();
+        List<String> names = new ArrayList<>();
+        names.add("All");
+        names.addAll(cats);
+        for (String name : names) {
             TextView chip = new TextView(this);
             chip.setText(name);
             chip.setTextSize(13);
@@ -119,9 +138,9 @@ public class ServicesActivity extends AppCompatActivity implements PlaceAdapter.
         b.tvCount.setText(shown.size() + (shown.size() == 1 ? " place" : " places"));
 
         if (shown.isEmpty()) {
-            b.tvEmptyTitle.setText(all.isEmpty() ? "No data" : "No results");
+            b.tvEmptyTitle.setText(all.isEmpty() ? "No places yet" : "No results");
             b.tvEmptySub.setText(all.isEmpty()
-                    ? "Could not read campus_map.xml."
+                    ? "Campus places will appear here once the administration adds them."
                     : "Nothing matches your search.");
             b.emptyState.setVisibility(View.VISIBLE);
             b.rvItems.setVisibility(View.INVISIBLE);
@@ -159,7 +178,6 @@ public class ServicesActivity extends AppCompatActivity implements PlaceAdapter.
         s.btnMap.setVisibility(p.hasLocation() ? View.VISIBLE : View.GONE);
         s.btnWeb.setVisibility(p.hasWebsite() ? View.VISIBLE : View.GONE);
 
-        // implicit intents
         s.btnCall.setOnClickListener(v -> launch(new Intent(Intent.ACTION_DIAL,
                 Uri.parse("tel:" + Uri.encode(p.phone))), "No dialer app found."));
         s.btnMap.setOnClickListener(v -> launch(new Intent(Intent.ACTION_VIEW,

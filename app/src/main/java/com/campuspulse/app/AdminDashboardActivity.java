@@ -158,6 +158,8 @@ public class AdminDashboardActivity extends AppCompatActivity implements Inciden
                 R.drawable.ic_lost_found, R.drawable.bg_tile_purple, ""));
         items.add(new ModuleItem("Incident queue", "Handle reports",
                 R.drawable.ic_report, R.drawable.bg_tile_orange, ""));
+        items.add(new ModuleItem("Manage Services", "Add, edit, delete",
+                R.drawable.ic_services, R.drawable.bg_tile_red, ""));
 
         binding.rvActions.setLayoutManager(new GridLayoutManager(this, getResources().getInteger(R.integer.grid_columns)));
         binding.rvActions.setNestedScrollingEnabled(false);
@@ -166,6 +168,7 @@ public class AdminDashboardActivity extends AppCompatActivity implements Inciden
                 case "Notices": startActivity(new Intent(this, NoticesActivity.class)); break;
                 case "Events": startActivity(new Intent(this, EventsActivity.class)); break;
                 case "Lost & Found": startActivity(new Intent(this, LostFoundActivity.class)); break;
+                case "Manage Services": startActivity(new Intent(this, ManageServicesActivity.class)); break;
                 default: startActivity(new Intent(this, IncidentsActivity.class));
             }
         }));
