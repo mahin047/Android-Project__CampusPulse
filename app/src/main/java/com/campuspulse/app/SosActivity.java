@@ -55,6 +55,7 @@ public class SosActivity extends AppCompatActivity implements SosButtonView.OnSo
 
     private ActivitySosBinding b;
     private String uid, myName = "Student", myStudentId = "";
+    private String myEmergencyName = "", myEmergencyPhone = "";
     private String selectedType = SosAlertModel.TYPES[0];
     private final List<TextView> chips = new ArrayList<>();
 
@@ -114,19 +115,14 @@ public class SosActivity extends AppCompatActivity implements SosButtonView.OnSo
 
         buildChips();
 
-        FirebaseFirestore.getInstance().collection("users").document(uid).get()
-                .addOnSuccessListener(doc -> {
-                    String n = doc.getString("name");
-                    String s = doc.getString("studentId");
-                    if (n != null && !n.trim().isEmpty()) myName = n.trim();
-                    if (s != null) myStudentId = s;
-                });
+        b.btnContact.setOnClickListener(v -> alertEmergencyContact());
     }
 
     // ---------- lifecycle: listener, receiver, binding ----------
     @Override
     protected void onStart() {
         super.onStart();
+        loadProfile();
         ContextCompat.registerReceiver(this, endedReceiver,
                 new IntentFilter(SosTrackingService.ACTION_ENDED), ContextCompat.RECEIVER_NOT_EXPORTED);
         receiverOn = true;
@@ -409,5 +405,49 @@ public class SosActivity extends AppCompatActivity implements SosButtonView.OnSo
 
     private int dp(int v) {
         return (int) (v * getResources().getDisplayMetrics().density);
+    }
+
+
+    private void loadProfile() {
+        FirebaseFirestore.getInstance().collection("users").document(uid).get()
+                .addOnSuccessListener(doc -> {
+                    String n = doc.getString("name");
+                    String s = doc.getString("studentId");
+                    if (n != null && !n.trim().isEmpty()) myName = n.trim();
+                    if (s != null) myStudentId = s;
+                    String en = doc.getString("emergencyName");
+                    String ep = doc.getString("emergencyPhone");
+                    myEmergencyName = en == null ? "" : en;
+                    myEmergencyPhone = ep == null ? "" : ep;
+                });
+    }
+
+    /** Emergency contact-ke SMS: message + live location-er Maps link. SMS app khole, user nijei Send chape. */
+    private void alertEmergencyContact() {
+        if (myEmergencyPhone.isEmpty()) {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle("No emergency contact yet")
+                    .setMessage("Choose one from your contacts in your Profile, then come back.")
+                    .setNegativeButton("Cancel", null)
+                    .setPositiveButton("Open Profile", (d, w) ->
+                            startActivity(new Intent(this, ProfileActivity.class)))
+                    .show();
+            return;
+        }
+        StringBuilder sb = new StringBuilder("EMERGENCY! I am ").append(myName);
+        if (!myStudentId.isEmpty()) sb.append(" (").append(myStudentId).append(")");
+        sb.append(" and I triggered Campus SOS (").append(selectedType).append(").");
+        Location loc = service == null ? null : service.getLastLocation();
+        if (loc != null) {
+            sb.append(" My location: https://maps.google.com/?q=")
+                    .append(loc.getLatitude()).append(",").append(loc.getLongitude());
+        }
+        Intent i = new Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:" + Uri.encode(myEmergencyPhone)));
+        i.putExtra("sms_body", sb.toString());
+        try {
+            startActivity(i);   // implicit intent
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(this, "No messaging app found.", Toast.LENGTH_SHORT).show();
+        }
     }
 }

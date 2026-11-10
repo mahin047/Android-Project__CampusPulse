@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
+import com.google.firebase.firestore.FieldValue;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
@@ -34,6 +35,7 @@ public class ProfileActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private String uid;
     private final ExecutorService io = Executors.newSingleThreadExecutor();
+    private ContactPicker picker;
 
     private final ActivityResultLauncher<PickVisualMediaRequest> pickPhoto =
             registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
@@ -75,6 +77,10 @@ public class ProfileActivity extends AppCompatActivity {
         pulse.setRepeatCount(android.animation.ValueAnimator.INFINITE);
         pulse.start();
 
+        picker = new ContactPicker(this, (name, phone) -> saveEmergency(name, phone));
+        b.btnPickEmergency.setOnClickListener(v -> picker.pick());
+        b.btnClearEmergency.setOnClickListener(v -> saveEmergency(null, null));
+
         load();
     }
 
@@ -109,6 +115,11 @@ public class ProfileActivity extends AppCompatActivity {
         b.tvPhone.setText(phone == null ? "Not added" : phone);
         Date joined = d.getDate("createdAt");
         b.tvJoined.setText(joined == null ? "-" : TimeUtil.dateOnly(joined));
+        String en = d.getString("emergencyName"), ep = d.getString("emergencyPhone");
+        boolean hasEmergency = ep != null && !ep.isEmpty();
+        b.tvEmergency.setText(hasEmergency ? (en == null ? "" : en + "  •  ") + ep : "Not added");
+        b.btnClearEmergency.setVisibility(hasEmergency ? View.VISIBLE : View.GONE);
+        b.btnPickEmergency.setText(hasEmergency ? "Change contact" : "Choose from contacts");
 
         String b64 = d.getString("photoB64");
         if (b64 == null || b64.isEmpty()) {
@@ -160,5 +171,19 @@ public class ProfileActivity extends AppCompatActivity {
                 });
             }
         });
+    }
+
+    private void saveEmergency(String name, String phone) {
+        java.util.Map<String, Object> up = new java.util.HashMap<>();
+        up.put("emergencyName", name == null ? FieldValue.delete() : name);
+        up.put("emergencyPhone", phone == null ? FieldValue.delete() : phone);
+        db.collection("users").document(uid).update(up)
+                .addOnSuccessListener(v -> {
+                    Toast.makeText(this, phone == null ? "Emergency contact removed."
+                            : "Emergency contact saved.", Toast.LENGTH_SHORT).show();
+                    load();
+                })
+                .addOnFailureListener(e -> Toast.makeText(this,
+                        "Could not save. Check your internet.", Toast.LENGTH_LONG).show());
     }
 }

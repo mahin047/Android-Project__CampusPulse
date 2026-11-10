@@ -204,6 +204,21 @@
                     android:textSize="12sp" />
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnContact"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="14dp"
+                    android:fontFamily="@font/poppins_bold"
+                    android:text="Alert my emergency contact (SMS)"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    app:cornerRadius="26dp"
+                    app:icon="@drawable/ic_sms"
+                    app:iconTint="#2DD4BF"
+                    app:strokeColor="#4D6FA3" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSafe"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="match_parent"
