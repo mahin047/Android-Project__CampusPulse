@@ -19,12 +19,14 @@ public class ResourceAdapter extends ListAdapter<StudyResource, ResourceAdapter.
     private static final DiffUtil.ItemCallback<StudyResource> DIFF = new DiffUtil.ItemCallback<StudyResource>() {
         @Override
         public boolean areItemsTheSame(@NonNull StudyResource a, @NonNull StudyResource b) {
-            return a.courseCode.equals(b.courseCode) && a.title.equals(b.title);
+            return a.id.equals(b.id);
         }
 
         @Override
         public boolean areContentsTheSame(@NonNull StudyResource a, @NonNull StudyResource b) {
-            return a.type.equals(b.type) && a.url.equals(b.url);
+            return a.type.equals(b.type) && a.url.equals(b.url) && a.title.equals(b.title)
+                    && a.courseCode.equals(b.courseCode) && a.courseTitle.equals(b.courseTitle)
+                    && a.dept.equals(b.dept);
         }
     };
 

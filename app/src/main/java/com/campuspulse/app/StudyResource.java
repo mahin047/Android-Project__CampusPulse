@@ -1,22 +1,50 @@
 package com.campuspulse.app;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.firebase.firestore.DocumentSnapshot;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class StudyResource {
-    public String courseCode, courseTitle, dept, type, title, url;
+    public static final String[] TYPES = {"Lecture Notes", "Previous Questions",
+            "Lab Materials", "Important Topics"};
+
+    public String id = "";
+    public String courseCode = "", courseTitle = "", dept = "", type = "", title = "", url = "";
+
+    private static String str(DocumentSnapshot d, String key) {
+        String v = d.getString(key);
+        return v == null ? "" : v.trim();
+    }
+
+    public static StudyResource from(DocumentSnapshot d) {
+        StudyResource r = new StudyResource();
+        r.id = d.getId();
+        r.courseCode = str(d, "courseCode");
+        r.courseTitle = str(d, "courseTitle");
+        r.dept = str(d, "dept");
+        r.type = str(d, "type");
+        r.title = str(d, "title");
+        r.url = str(d, "url");
+        return r;
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> m = new HashMap<>();
+        m.put("courseCode", courseCode);
+        m.put("courseTitle", courseTitle);
+        m.put("dept", dept);
+        m.put("type", type);
+        m.put("title", title);
+        m.put("url", url);
+        return m;
+    }
 
     public static class Dept {
         public String code, name;
@@ -43,6 +71,7 @@ public class StudyResource {
         }
 
         JSONArray courses = root.getJSONArray("courses");
+        int n = 0;
         for (int i = 0; i < courses.length(); i++) {
             JSONObject c = courses.getJSONObject(i);
             String code = c.getString("code");
@@ -52,6 +81,7 @@ public class StudyResource {
             for (int j = 0; j < res.length(); j++) {
                 JSONObject r = res.getJSONObject(j);
                 StudyResource s = new StudyResource();
+                s.id = "seed_" + (n++);
                 s.courseCode = code;
                 s.courseTitle = title;
                 s.dept = dept;

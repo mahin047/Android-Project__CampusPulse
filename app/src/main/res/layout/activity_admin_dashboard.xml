@@ -87,17 +87,46 @@
                         android:textSize="13sp" />
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/tvAvatar"
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:background="@drawable/bg_avatar_gold"
-                    android:contentDescription="Admin menu"
-                    android:fontFamily="@font/poppins_bold"
-                    android:gravity="center"
-                    android:text="A"
-                    android:textColor="#06201E"
-                    android:textSize="26sp" />
+                <FrameLayout
+                    android:id="@+id/avatarWrap"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:contentDescription="Admin profile"
+                    android:focusable="true">
+
+                    <TextView
+                        android:id="@+id/tvAvatar"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/bg_avatar_gold"
+                        android:fontFamily="@font/poppins_bold"
+                        android:gravity="center"
+                        android:text="A"
+                        android:textColor="#06201E"
+                        android:textSize="22sp" />
+
+                    <FrameLayout
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_gravity="bottom|end">
+
+                        <View
+                            android:id="@+id/viewPulse"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:background="@drawable/bg_online_pulse" />
+
+                        <View
+                            android:id="@+id/viewOnline"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_gravity="center"
+                            android:background="@drawable/bg_status_dot" />
+                    </FrameLayout>
+                </FrameLayout>
             </LinearLayout>
 
             <!-- Live SOS banner (শুধু unanswered alert থাকলে দেখা যায়) -->

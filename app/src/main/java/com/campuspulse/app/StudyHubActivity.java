@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.campuspulse.app.databinding.ActivityDirectoryBinding;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -45,6 +46,8 @@ public class StudyHubActivity extends AppCompatActivity implements ResourceAdapt
     private String typeFilter = ALL;
     private String query = "";
     private String myDept = null;
+    private ListenerRegistration reg;
+    private boolean firstData = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,25 +75,43 @@ public class StudyHubActivity extends AppCompatActivity implements ResourceAdapt
                 applyFilter();
             }
         });
+    }
 
-        b.loading.setVisibility(View.VISIBLE);
-        StudyRepository.get(this).load(data -> {
+    // ---------- live listen: admin panel theke change hole sathe sathe update ----------
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (firstData) b.loading.setVisibility(View.VISIBLE);
+        reg = StudyRepository.get(this).listen(data -> {
             if (isDestroyed()) return;
             b.loading.setVisibility(View.GONE);
+            all.clear();
             all.addAll(data.resources);
-            depts.addAll(data.departments);
 
-            buildDeptChips();
+            if (firstData) {
+                depts.clear();
+                depts.addAll(data.departments);
+                buildDeptChips();
+            }
             buildTypeChips();
 
-            if (myDept == null) {
-                askMyDepartment();               // prothom-bar
-            } else {
+            if (firstData) {
+                firstData = false;
+                if (myDept == null) {
+                    askMyDepartment();               // prothom-bar
+                    return;
+                }
                 deptFilter = myDept;
-                styleChips();
-                applyFilter();
             }
+            styleChips();
+            applyFilter();
         });
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (reg != null) { reg.remove(); reg = null; }
     }
 
     // ---------- prothom-bar department bechhe neoa ----------
@@ -140,9 +161,12 @@ public class StudyHubActivity extends AppCompatActivity implements ResourceAdapt
     }
 
     private void buildTypeChips() {
+        b.chipRow.removeAllViews();
+        typeChips.clear();
         Set<String> types = new LinkedHashSet<>();
         types.add(ALL);
-        for (StudyResource r : all) types.add(r.type);
+        for (StudyResource r : all) if (!r.type.isEmpty()) types.add(r.type);
+        if (!types.contains(typeFilter)) typeFilter = ALL;
         for (String name : types) {
             TextView chip = makeChip(name, name);
             chip.setOnClickListener(v -> {
@@ -196,8 +220,8 @@ public class StudyHubActivity extends AppCompatActivity implements ResourceAdapt
 
         if (shown.isEmpty()) {
             if (all.isEmpty()) {
-                b.tvEmptyTitle.setText("No data");
-                b.tvEmptySub.setText("Could not read study_hub.json.");
+                b.tvEmptyTitle.setText("No materials yet");
+                b.tvEmptySub.setText("Study materials will appear here once they are added.");
             } else if (!query.isEmpty()) {
                 b.tvEmptyTitle.setText("No results");
                 b.tvEmptySub.setText("Nothing matches \"" + query + "\".");

@@ -7,6 +7,9 @@ import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.PopupMenu;
 import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
+import android.net.ConnectivityManager;
+import android.net.Network;
 import android.content.Context;
 import android.os.Build;
 import android.os.VibrationEffect;
@@ -29,6 +32,9 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.campuspulse.app.databinding.ActivityAdminDashboardBinding;
+import com.campuspulse.app.databinding.SheetAdminProfileBinding;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.AggregateSource;
@@ -61,6 +67,18 @@ public class AdminDashboardActivity extends AppCompatActivity implements Inciden
 
     private ConnectivityBanner banner;   // field
 
+    // admin profile + online dot
+    private String adminName = "Admin", adminEmail = "", adminSid = "", adminDept = "", adminPhone = "";
+    private boolean online = true;
+    private ObjectAnimator dotPulse, sheetPulse;
+    private SheetAdminProfileBinding sheet;
+    private BottomSheetDialog sheetDialog;
+    private ConnectivityManager cm;
+    private final ConnectivityManager.NetworkCallback netCb = new ConnectivityManager.NetworkCallback() {
+        @Override public void onAvailable(@NonNull Network n) { runOnUiThread(() -> setOnline(NetUtil.isOnline(AdminDashboardActivity.this))); }
+        @Override public void onLost(@NonNull Network n) { runOnUiThread(() -> setOnline(NetUtil.isOnline(AdminDashboardActivity.this))); }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,7 +101,7 @@ public class AdminDashboardActivity extends AppCompatActivity implements Inciden
 
         binding.tvSeeAll.setOnClickListener(v ->
                 startActivity(new Intent(this, IncidentsActivity.class)));
-        binding.tvAvatar.setOnClickListener(v -> showMenu());
+        binding.avatarWrap.setOnClickListener(v -> showProfileSheet());
 
         verifyAdminAndLoadName();
         playIntro();
@@ -101,10 +119,16 @@ public class AdminDashboardActivity extends AppCompatActivity implements Inciden
             }
             String full = doc.getString("name");
             if (full != null && !full.trim().isEmpty()) {
-                String first = full.trim().split("\\s+")[0];
+                adminName = full.trim();
+                String first = adminName.split("\\s+")[0];
                 binding.tvName.setText(first);
-                binding.tvAvatar.setText(first.substring(0, 1).toUpperCase());
+                binding.tvAvatar.setText(initials(adminName));
             }
+            adminEmail = orEmpty(doc.getString("email"));
+            adminSid = orEmpty(doc.getString("studentId"));
+            String dept = orEmpty(doc.getString("department"));
+            adminDept = dept.isEmpty() ? "" : Departments.nameOf(dept) + " (" + dept + ")";
+            adminPhone = orEmpty(doc.getString("phone"));
         });
     }
 
@@ -160,6 +184,8 @@ public class AdminDashboardActivity extends AppCompatActivity implements Inciden
                 R.drawable.ic_report, R.drawable.bg_tile_orange, ""));
         items.add(new ModuleItem("Manage Services", "Add, edit, delete",
                 R.drawable.ic_services, R.drawable.bg_tile_red, ""));
+        items.add(new ModuleItem("Manage Study Hub", "Add, edit, links",
+                R.drawable.ic_study, R.drawable.bg_tile_teal, ""));
 
         binding.rvActions.setLayoutManager(new GridLayoutManager(this, getResources().getInteger(R.integer.grid_columns)));
         binding.rvActions.setNestedScrollingEnabled(false);
@@ -169,6 +195,7 @@ public class AdminDashboardActivity extends AppCompatActivity implements Inciden
                 case "Events": startActivity(new Intent(this, EventsActivity.class)); break;
                 case "Lost & Found": startActivity(new Intent(this, LostFoundActivity.class)); break;
                 case "Manage Services": startActivity(new Intent(this, ManageServicesActivity.class)); break;
+                case "Manage Study Hub": startActivity(new Intent(this, ManageStudyActivity.class)); break;
                 default: startActivity(new Intent(this, IncidentsActivity.class));
             }
         }));
@@ -180,6 +207,13 @@ public class AdminDashboardActivity extends AppCompatActivity implements Inciden
         super.onStart();
         if (uid == null) return;
         banner.start();
+
+        // online dot: green + pulse jokhon internet ache, grey jokhon nei
+        setOnline(NetUtil.isOnline(this));
+        cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        if (cm != null) {
+            try { cm.registerDefaultNetworkCallback(netCb); } catch (RuntimeException ignored) { }
+        }
 
         // 1) incidents: pending / investigating count + attention list
         regs.add(db.collection("incidents").addSnapshotListener((snap, e) -> {
@@ -235,22 +269,102 @@ public class AdminDashboardActivity extends AppCompatActivity implements Inciden
     @Override
     protected void onStop() {
         super.onStop();
+        if (dotPulse != null) { dotPulse.cancel(); dotPulse = null; }
+        if (cm != null) { try { cm.unregisterNetworkCallback(netCb); } catch (RuntimeException ignored) { } }
+        if (sheetDialog != null) sheetDialog.dismiss();
         for (ListenerRegistration r : regs) r.remove();
         regs.clear();
         stopSos();
         banner.stop();
     }
 
-    // ---------- menu ----------
-    private void showMenu() {
-        PopupMenu menu = new PopupMenu(this, binding.tvAvatar);
-        menu.getMenu().add(0, 1, 0, "Log out");
-        menu.setOnMenuItemClickListener(item -> {
-            FirebaseAuth.getInstance().signOut();
-            goLogin();
-            return true;
+    // ---------- admin profile (avatar click) + online dot ----------
+    private static String orEmpty(String v) { return v == null ? "" : v.trim(); }
+
+    private static String initials(String name) {
+        String[] p = name.trim().split("\\s+");
+        String r = p[0].substring(0, 1);
+        if (p.length > 1) r += p[1].substring(0, 1);
+        return r.toUpperCase(Locale.ROOT);
+    }
+
+    private ObjectAnimator startPulse(View v) {
+        ObjectAnimator a = ObjectAnimator.ofPropertyValuesHolder(v,
+                PropertyValuesHolder.ofFloat(View.SCALE_X, 0.6f, 1.6f),
+                PropertyValuesHolder.ofFloat(View.SCALE_Y, 0.6f, 1.6f),
+                PropertyValuesHolder.ofFloat(View.ALPHA, 0.9f, 0f));
+        a.setDuration(1500);
+        a.setRepeatCount(ObjectAnimator.INFINITE);
+        a.setInterpolator(new DecelerateInterpolator());
+        a.start();
+        return a;
+    }
+
+    /** green dot = online (animated), grey dot = offline. */
+    private void setOnline(boolean on) {
+        online = on;
+        if (dotPulse != null) { dotPulse.cancel(); dotPulse = null; }
+        binding.viewOnline.setBackgroundResource(on ? R.drawable.bg_status_dot : R.drawable.bg_status_dot_off);
+        binding.viewPulse.setVisibility(on ? View.VISIBLE : View.INVISIBLE);
+        if (on) dotPulse = startPulse(binding.viewPulse);
+        if (sheet != null) bindSheetStatus();
+    }
+
+    private void bindSheetStatus() {
+        if (sheetPulse != null) { sheetPulse.cancel(); sheetPulse = null; }
+        sheet.viewSOnline.setBackgroundResource(online ? R.drawable.bg_status_dot : R.drawable.bg_status_dot_off);
+        sheet.viewSPulse.setVisibility(online ? View.VISIBLE : View.INVISIBLE);
+        sheet.tvSStatus.setText(online ? "Online now" : "Offline");
+        sheet.tvSStatus.setTextColor(Color.parseColor(online ? "#34D399" : "#9DB2D1"));
+        if (online) sheetPulse = startPulse(sheet.viewSPulse);
+    }
+
+    private void showRow(View row, android.widget.TextView tv, String value) {
+        row.setVisibility(value.isEmpty() ? View.GONE : View.VISIBLE);
+        tv.setText(value);
+    }
+
+    private void showProfileSheet() {
+        FirebaseUser u = FirebaseAuth.getInstance().getCurrentUser();
+        if (u == null) { goLogin(); return; }
+
+        sheetDialog = new BottomSheetDialog(this);
+        sheet = SheetAdminProfileBinding.inflate(getLayoutInflater());
+
+        sheet.tvSAvatar.setText(initials(adminName));
+        sheet.tvSName.setText(adminName);
+        String email = adminEmail.isEmpty() ? orEmpty(u.getEmail()) : adminEmail;
+        showRow(sheet.rowEmail, sheet.tvSEmail, email);
+        showRow(sheet.rowId, sheet.tvSId, adminSid);
+        showRow(sheet.rowDept, sheet.tvSDept, adminDept);
+        showRow(sheet.rowPhone, sheet.tvSPhone, adminPhone);
+
+        long last = u.getMetadata() == null ? 0 : u.getMetadata().getLastSignInTimestamp();
+        showRow(sheet.rowLogin, sheet.tvSLogin, last <= 0 ? ""
+                : new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()).format(new Date(last)));
+
+        sheet.btnSLogout.setOnClickListener(v -> new MaterialAlertDialogBuilder(this)
+                .setTitle("Log out?")
+                .setMessage("You will need to sign in again to use the admin console.")
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Log out", (d, w) -> {
+                    sheetDialog.dismiss();
+                    FirebaseAuth.getInstance().signOut();
+                    goLogin();
+                })
+                .show());
+
+        sheetDialog.setContentView(sheet.getRoot());
+        // sheet er default background ta transparent, amader rounded dark background dekhabe
+        View container = sheetDialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+        if (container != null) container.setBackgroundResource(android.R.color.transparent);
+        sheetDialog.setOnDismissListener(d -> {
+            if (sheetPulse != null) { sheetPulse.cancel(); sheetPulse = null; }
+            sheet = null;
+            sheetDialog = null;
         });
-        menu.show();
+        bindSheetStatus();
+        sheetDialog.show();
     }
 
     private void goLogin() {
